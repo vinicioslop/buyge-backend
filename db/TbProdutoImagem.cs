@@ -9,7 +9,5 @@ namespace buyge_backend.db
         public byte[] ImgProduto { get; set; } = null!;
         public string DsImagemProduto { get; set; } = null!;
         public int FkCdProduto { get; set; }
-
-        public virtual TbProduto FkCdProdutoNavigation { get; set; } = null!;
     }
 }

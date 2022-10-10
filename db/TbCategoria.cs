@@ -7,13 +7,13 @@ namespace buyge_backend.db
     {
         public TbCategoria()
         {
-            FkCdProduto = new HashSet<TbProduto>();
+            TbProduto = new HashSet<TbProduto>();
         }
 
         public int CdCategoria { get; set; }
         public string NmCategoria { get; set; } = null!;
         public string DsCategoria { get; set; } = null!;
 
-        public virtual ICollection<TbProduto> FkCdProduto { get; set; }
+        public virtual ICollection<TbProduto> TbProduto { get; set; }
     }
 }
