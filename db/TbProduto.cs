@@ -5,6 +5,14 @@ namespace buyge_backend.db
 {
     public partial class TbProduto
     {
+        public TbProduto()
+        {
+            TbItemCarrinho = new HashSet<TbItemCarrinho>();
+            TbItemCompra = new HashSet<TbItemCompra>();
+            TbItemFavorito = new HashSet<TbItemFavorito>();
+            TbProdutoImagem = new HashSet<TbProdutoImagem>();
+        }
+
         public int CdProduto { get; set; }
         public string NmProduto { get; set; } = null!;
         public string DsProduto { get; set; } = null!;
@@ -15,5 +23,9 @@ namespace buyge_backend.db
 
         public virtual TbCategoria FkCdCategoriaNavigation { get; set; } = null!;
         public virtual TbMercante FkCdMercanteNavigation { get; set; } = null!;
+        public virtual ICollection<TbItemCarrinho> TbItemCarrinho { get; set; }
+        public virtual ICollection<TbItemCompra> TbItemCompra { get; set; }
+        public virtual ICollection<TbItemFavorito> TbItemFavorito { get; set; }
+        public virtual ICollection<TbProdutoImagem> TbProdutoImagem { get; set; }
     }
 }

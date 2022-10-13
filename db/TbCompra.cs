@@ -12,9 +12,9 @@ namespace buyge_backend.db
 
         public int CdCompra { get; set; }
         public string VlTotalCompra { get; set; } = null!;
-        public int TbClienteCdCliente { get; set; }
+        public int FkCdCliente { get; set; }
 
-        public virtual TbCliente TbClienteCdClienteNavigation { get; set; } = null!;
+        public virtual TbCliente FkCdClienteNavigation { get; set; } = null!;
         public virtual ICollection<TbItemCompra> TbItemCompra { get; set; }
     }
 }
