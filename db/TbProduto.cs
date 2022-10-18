@@ -17,7 +17,7 @@ namespace buyge_backend.db
         public string NmProduto { get; set; } = null!;
         public string DsProduto { get; set; } = null!;
         public decimal VlProduto { get; set; }
-        public int QtEstoque { get; set; }
+        public int QtProduto { get; set; }
         public int FkCdMercante { get; set; }
         public int FkCdCategoria { get; set; }
 

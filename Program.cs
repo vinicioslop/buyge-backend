@@ -389,7 +389,7 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
         NmProduto = novoProduto.NmProduto,
         DsProduto = novoProduto.DsProduto,
         VlProduto = novoProduto.VlProduto,
-        QtEstoque = novoProduto.QtEstoque,
+        QtProduto = novoProduto.QtProduto,
         FkCdMercante = novoProduto.FkCdMercante,
         FkCdCategoria = novoProduto.FkCdCategoria
     };
@@ -402,7 +402,7 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     return Results.Created(produtoUrl, produto);
 });
 
-app.MapPut("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
+app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
     [FromBody] TbProduto produtoAlterado
 ) =>
@@ -412,11 +412,6 @@ app.MapPut("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Id inconsistente." });
     }
 
-    if (String.IsNullOrEmpty(produtoAlterado.NmProduto))
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido deixar um produto sem nome." });
-    }
-
     var produto = _db.TbProduto.Find(id);
 
     if (produto == null)
@@ -424,12 +419,10 @@ app.MapPut("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
         return Results.NotFound();
     }
 
-    produto.NmProduto = produtoAlterado.NmProduto;
-    produto.DsProduto = produtoAlterado.DsProduto;
-    produto.VlProduto = produtoAlterado.VlProduto;
-    produto.QtEstoque = produtoAlterado.QtEstoque;
-    produto.FkCdMercante = produtoAlterado.FkCdMercante;
-    produto.FkCdCategoria = produtoAlterado.FkCdCategoria;
+    if (!String.IsNullOrEmpty(produtoAlterado.NmProduto)) produto.NmProduto = produtoAlterado.NmProduto;
+    if (!String.IsNullOrEmpty(produtoAlterado.DsProduto)) produto.DsProduto = produtoAlterado.DsProduto;
+    if (produtoAlterado.VlProduto > 0) produto.VlProduto = produtoAlterado.VlProduto;
+    if (produtoAlterado.QtProduto > 0) produto.QtProduto = produtoAlterado.QtProduto;
 
     _db.SaveChanges();
 
@@ -606,8 +599,8 @@ app.MapPost("/api/favorito/items/{idFavorito}/{idProduto}", ([FromServices] bdbu
     return Results.Created(itemFavoritoUrl, itemFavorito);
 });
 
-app.MapDelete("/api/favorito/items/{idFavorito}/{idItemFavorito}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idCarrinho, [FromRoute] int idItemFavorito
+app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idItemFavorito
 ) =>
 {
     var itemFavorito = _db.TbItemFavorito.Find(idItemFavorito);

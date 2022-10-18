@@ -122,7 +122,7 @@ namespace buyge_backend.db
                 entity.Property(e => e.FkCdCliente).HasColumnName("fk_cd_cliente");
 
                 entity.Property(e => e.VlTotalCompra)
-                    .HasMaxLength(45)
+                    .HasPrecision(8, 2)
                     .HasColumnName("vl_total_compra");
 
                 entity.HasOne(d => d.FkCdClienteNavigation)
@@ -313,6 +313,11 @@ namespace buyge_backend.db
                     .HasMaxLength(30)
                     .HasColumnName("nm_loja");
 
+                entity.Property(e => e.NrCnpj)
+                    .HasMaxLength(14)
+                    .HasColumnName("nr_cnpj")
+                    .IsFixedLength();
+
                 entity.HasOne(d => d.FkCdClienteNavigation)
                     .WithMany(p => p.TbMercante)
                     .HasForeignKey(d => d.FkCdCliente)
@@ -343,7 +348,7 @@ namespace buyge_backend.db
                     .HasMaxLength(30)
                     .HasColumnName("nm_produto");
 
-                entity.Property(e => e.QtEstoque).HasColumnName("qt_estoque");
+                entity.Property(e => e.QtProduto).HasColumnName("qt_produto");
 
                 entity.Property(e => e.VlProduto)
                     .HasPrecision(8, 2)
@@ -373,14 +378,12 @@ namespace buyge_backend.db
 
                 entity.Property(e => e.CdProdutoImagem).HasColumnName("cd_produto_imagem");
 
-                entity.Property(e => e.DsImagemProduto)
-                    .HasMaxLength(80)
-                    .HasColumnName("ds_imagem_produto");
+                entity.Property(e => e.DsImagemProduto).HasColumnName("ds_imagem_produto");
 
                 entity.Property(e => e.FkCdProduto).HasColumnName("fk_cd_produto");
 
                 entity.Property(e => e.ImgProduto)
-                    .HasColumnType("blob")
+                    .HasColumnType("mediumtext")
                     .HasColumnName("img_produto");
 
                 entity.HasOne(d => d.FkCdProdutoNavigation)
