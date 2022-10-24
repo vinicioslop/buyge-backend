@@ -6,6 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddSwaggerGen();
 builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddCors();
 
 builder.Services.AddDbContext<bdbuygeContext>(opt =>
 {
@@ -15,6 +16,12 @@ builder.Services.AddDbContext<bdbuygeContext>(opt =>
 });
 
 var app = builder.Build();
+
+app.UseCors(x => x
+    .AllowAnyMethod()
+    .AllowAnyHeader()
+    .SetIsOriginAllowed(origin => true)
+);
 
 app.UseHttpsRedirection();
 app.UseSwagger();
@@ -26,6 +33,18 @@ app.MapGet("/api/clientes", ([FromServices] bdbuygeContext _db) =>
     var query = _db.TbCliente.AsQueryable<TbCliente>();
     var clientes = query.ToList<TbCliente>();
     return Results.Ok(clientes);
+});
+
+app.MapGet("/api/clientes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var cliente = _db.TbCliente.Find(id);
+
+    if (cliente == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(cliente);
 });
 
 app.MapPost("/api/clientes", ([FromServices] bdbuygeContext _db,
@@ -292,6 +311,18 @@ app.MapGet("/api/mercantes", ([FromServices] bdbuygeContext _db) =>
     return Results.Ok(mercantes);
 });
 
+app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var mercante = _db.TbMercante.Find(id);
+
+    if (mercante == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(mercante);
+});
+
 app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
 ) =>
@@ -375,6 +406,18 @@ app.MapGet("/api/produtos", ([FromServices] bdbuygeContext _db) =>
     return Results.Ok(produtos);
 });
 
+app.MapGet("/api/produtos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var produto = _db.TbProduto.Find(id);
+
+    if (produto == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(produto);
+});
+
 app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProduto novoProduto
 ) =>
@@ -446,6 +489,94 @@ app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
     return Results.Ok();
 });
 // FINAL PRODUTOS
+
+// COMEÇO IMAGENS PRODUTOS
+app.MapGet("/api/produtos/produto-imagens", ([FromServices] bdbuygeContext _db) =>
+{
+    var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
+    var produtosImagens = query.ToList<TbProdutoImagem>();
+    return Results.Ok(produtosImagens);
+});
+
+app.MapGet("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
+    var produtoImagens = query.ToList<TbProdutoImagem>().Where(pi => pi.FkCdProduto == id);
+
+    if (produtoImagens == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(produtoImagens);
+});
+
+app.MapPost("/api/produto-imagens", ([FromServices] bdbuygeContext _db,
+    [FromBody] TbProdutoImagem novaImagem
+) =>
+{
+    if (String.IsNullOrEmpty(novaImagem.ImgProduto))
+    {
+        return Results.BadRequest(new { mensagem = "Não é possivel incluir uma imagem sem endereço." });
+    }
+
+    var produtoImagem = new TbProdutoImagem
+    {
+        ImgProduto = novaImagem.ImgProduto,
+        DsImagemProduto = novaImagem.DsImagemProduto,
+        FkCdProduto = novaImagem.FkCdProduto
+    };
+
+    _db.TbProdutoImagem.Add(produtoImagem);
+    _db.SaveChanges();
+
+    var produtoImagemUrl = $"/api/produtos/produto-imagens/{produtoImagem.CdProdutoImagem}";
+
+    return Results.Created(produtoImagemUrl, produtoImagem);
+});
+
+app.MapMethods("/api/produtos/produtos-imagem/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
+    [FromRoute] int id,
+    [FromBody] TbProdutoImagem produtoImagemAlterado
+) =>
+{
+    if (produtoImagemAlterado.CdProdutoImagem != id)
+    {
+        return Results.BadRequest(new { mensagem = "Id inconsistente." });
+    }
+
+    var produtoImagem = _db.TbProdutoImagem.Find(id);
+
+    if (produtoImagem == null)
+    {
+        return Results.NotFound();
+    }
+
+    if (!String.IsNullOrEmpty(produtoImagemAlterado.ImgProduto)) produtoImagem.ImgProduto = produtoImagemAlterado.ImgProduto;
+    if (!String.IsNullOrEmpty(produtoImagemAlterado.DsImagemProduto)) produtoImagem.DsImagemProduto = produtoImagemAlterado.DsImagemProduto;
+
+    _db.SaveChanges();
+
+    return Results.Ok(produtoImagem);
+});
+
+app.MapDelete("/api/produtos/produtos-imagem/{id}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int id
+) =>
+{
+    var produtoImagem = _db.TbProdutoImagem.Find(id);
+
+    if (produtoImagem == null)
+    {
+        return Results.NotFound();
+    }
+
+    _db.TbProdutoImagem.Remove(produtoImagem);
+    _db.SaveChanges();
+
+    return Results.Ok();
+});
+// FINAL IMAGENS PRODUTOS
 
 // COMEÇO CARRINHO
 app.MapGet("/api/carrinho/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
