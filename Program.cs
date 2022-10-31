@@ -232,6 +232,18 @@ app.MapGet("/api/categorias", ([FromServices] bdbuygeContext _db) =>
     return Results.Ok(categorias);
 });
 
+app.MapGet("/api/categorias/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var categoria = _db.TbCategoria.Find(id);
+
+    if (categoria == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(categoria);
+});
+
 app.MapPost("/api/categorias", ([FromServices] bdbuygeContext _db,
     [FromBody] TbCategoria novaCategoria
 ) =>
@@ -438,6 +450,7 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     };
 
     _db.TbProduto.Add(produto);
+
     _db.SaveChanges();
 
     var produtoUrl = $"/api/produtos/{produto.CdProduto}";
@@ -466,6 +479,7 @@ app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeC
     if (!String.IsNullOrEmpty(produtoAlterado.DsProduto)) produto.DsProduto = produtoAlterado.DsProduto;
     if (produtoAlterado.VlProduto > 0) produto.VlProduto = produtoAlterado.VlProduto;
     if (produtoAlterado.QtProduto > 0) produto.QtProduto = produtoAlterado.QtProduto;
+    if (produtoAlterado.FkCdCategoria > 0) produto.FkCdCategoria = produtoAlterado.FkCdCategoria;
 
     _db.SaveChanges();
 
@@ -511,7 +525,7 @@ app.MapGet("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _
     return Results.Ok(produtoImagens);
 });
 
-app.MapPost("/api/produto-imagens", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/produtos/produto-imagens", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProdutoImagem novaImagem
 ) =>
 {
@@ -535,7 +549,7 @@ app.MapPost("/api/produto-imagens", ([FromServices] bdbuygeContext _db,
     return Results.Created(produtoImagemUrl, produtoImagem);
 });
 
-app.MapMethods("/api/produtos/produtos-imagem/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
+app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
     [FromBody] TbProdutoImagem produtoImagemAlterado
 ) =>
@@ -560,7 +574,7 @@ app.MapMethods("/api/produtos/produtos-imagem/{id}", new[] { "PATCH" }, ([FromSe
     return Results.Ok(produtoImagem);
 });
 
-app.MapDelete("/api/produtos/produtos-imagem/{id}", ([FromServices] bdbuygeContext _db,
+app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
 ) =>
 {

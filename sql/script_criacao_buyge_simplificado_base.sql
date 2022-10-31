@@ -1,3 +1,4 @@
+drop database bdbuyge;
 create database bdbuyge;
 
 use bdbuyge;
