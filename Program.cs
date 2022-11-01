@@ -505,7 +505,7 @@ app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
 // FINAL PRODUTOS
 
 // COMEÇO IMAGENS PRODUTOS
-app.MapGet("/api/produtos/produto-imagens", ([FromServices] bdbuygeContext _db) =>
+app.MapGet("/api/produtos/produto-imagen", ([FromServices] bdbuygeContext _db) =>
 {
     var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
     var produtosImagens = query.ToList<TbProdutoImagem>();
@@ -525,7 +525,7 @@ app.MapGet("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _
     return Results.Ok(produtoImagens);
 });
 
-app.MapPost("/api/produtos/produto-imagens", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProdutoImagem novaImagem
 ) =>
 {
