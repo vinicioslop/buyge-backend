@@ -425,6 +425,19 @@ app.MapGet("/api/produtos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute]
     return Results.Ok(produto);
 });
 
+app.MapGet("/api/produtos/mercante/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var query = _db.TbProduto.AsQueryable<TbProduto>();
+    var produtos = query.ToList<TbProduto>().Where(p => p.FkCdMercante == id);
+
+    if (produtos == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(produtos);
+});
+
 app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProduto novoProduto
 ) =>
