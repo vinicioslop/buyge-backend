@@ -360,7 +360,7 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     return Results.Created(mercanteUrl, mercante);
 });
 
-app.MapPut("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
+app.MapMethods("/api/mercantes/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
     [FromBody] TbMercante mercanteAlterado
 ) =>
@@ -370,11 +370,6 @@ app.MapPut("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Id inconsistente." });
     }
 
-    if (String.IsNullOrEmpty(mercanteAlterado.NmLoja))
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido deixar uma loja sem nome." });
-    }
-
     var mercante = _db.TbMercante.Find(id);
 
     if (mercante == null)
@@ -382,10 +377,10 @@ app.MapPut("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
         return Results.NotFound();
     }
 
-    mercante.NmLoja = mercanteAlterado.NmLoja;
-    mercante.DsLoja = mercanteAlterado.DsLoja;
-    mercante.ImgLogo = mercanteAlterado.ImgLogo;
-    mercante.FkCdCliente = mercanteAlterado.FkCdCliente;
+    if (!String.IsNullOrEmpty(mercante.NmLoja)) mercante.NmLoja = mercanteAlterado.NmLoja;
+    if (!String.IsNullOrEmpty(mercante.DsLoja)) mercante.DsLoja = mercanteAlterado.DsLoja;
+    if (!String.IsNullOrEmpty(mercante.ImgLogo)) mercante.ImgLogo = mercanteAlterado.ImgLogo;
+    if (!String.IsNullOrEmpty(mercante.NrCnpj)) mercante.NrCnpj = mercanteAlterado.NrCnpj;
 
     _db.SaveChanges();
 
@@ -505,7 +500,7 @@ app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
 // FINAL PRODUTOS
 
 // COMEÇO IMAGENS PRODUTOS
-app.MapGet("/api/produtos/produto-imagen", ([FromServices] bdbuygeContext _db) =>
+app.MapGet("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db) =>
 {
     var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
     var produtosImagens = query.ToList<TbProdutoImagem>();
