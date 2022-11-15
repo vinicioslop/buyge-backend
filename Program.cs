@@ -520,7 +520,19 @@ app.MapGet("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db) =
     return Results.Ok(produtosImagens);
 });
 
-app.MapGet("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+app.MapGet("/api/produtoss/produto-imagem/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var imagem = _db.TbProdutoImagem.Find(id);
+
+    if (imagem == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(imagem);
+});
+
+app.MapGet("/api/produtos/produto-imagem/{id}/todas", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
     var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
     var produtoImagens = query.ToList<TbProdutoImagem>().Where(pi => pi.FkCdProduto == id);
