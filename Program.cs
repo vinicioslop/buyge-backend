@@ -60,6 +60,7 @@ app.MapPost("/api/clientes", ([FromServices] bdbuygeContext _db,
     {
         NmCliente = novoCliente.NmCliente,
         NmSobrenome = novoCliente.NmSobrenome,
+        NrCpf = novoCliente.NrCpf,
         DtNascimento = novoCliente.DtNascimento,
         NrTelefone = novoCliente.NrTelefone,
         NmLogin = novoCliente.NmLogin,
@@ -781,5 +782,4 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
     return Results.Ok();
 });
 // FINAL ITEM FAVORITO
-
 app.Run();

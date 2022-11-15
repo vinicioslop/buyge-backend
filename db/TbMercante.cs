@@ -14,7 +14,7 @@ namespace buyge_backend.db
         public string NmLoja { get; set; } = null!;
         public string DsLoja { get; set; } = null!;
         public string ImgLogo { get; set; } = null!;
-        public string? NrCnpj { get; set; }
+        public string NrCnpj { get; set; } = null!;
         public int FkCdCliente { get; set; }
 
         public virtual TbCliente FkCdClienteNavigation { get; set; } = null!;

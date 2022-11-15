@@ -17,6 +17,7 @@ namespace buyge_backend.db
         public int CdCliente { get; set; }
         public string NmCliente { get; set; } = null!;
         public string NmSobrenome { get; set; } = null!;
+        public string NrCpf { get; set; } = null!;
         public DateTime DtNascimento { get; set; }
         public string NrTelefone { get; set; } = null!;
         public string NmLogin { get; set; } = null!;
