@@ -397,6 +397,20 @@ app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute
     return Results.Ok(mercante);
 }).AllowAnonymous();
 
+app.MapGet("/api/mercantes/mercador/{idMercador}", ([FromServices] bdbuygeContext _db, [FromRoute] int idMercador
+) =>
+{
+    var query = _db.TbMercante.AsQueryable<TbMercante>();
+    var mercantes = query.ToList<TbMercante>().Where(m => m.FkCdCliente == idMercador);
+
+    if (mercantes == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(mercantes);
+}).RequireAuthorization();
+
 app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
 ) =>
@@ -423,27 +437,27 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     return Results.Created(mercanteUrl, mercante);
 }).RequireAuthorization();
 
-app.MapMethods("/api/mercantes/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
-    [FromRoute] int id,
+app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idMercante,
     [FromBody] TbMercante mercanteAlterado
 ) =>
 {
-    if (mercanteAlterado.CdMercante != id)
+    if (mercanteAlterado.CdMercante != idMercante)
     {
         return Results.BadRequest(new { mensagem = "Id inconsistente." });
     }
 
-    var mercante = _db.TbMercante.Find(id);
+    var mercante = _db.TbMercante.Find(idMercante);
 
     if (mercante == null)
     {
         return Results.NotFound();
     }
 
-    if (!String.IsNullOrEmpty(mercante.NmLoja)) mercante.NmLoja = mercanteAlterado.NmLoja;
-    if (!String.IsNullOrEmpty(mercante.DsLoja)) mercante.DsLoja = mercanteAlterado.DsLoja;
-    if (!String.IsNullOrEmpty(mercante.ImgLogo)) mercante.ImgLogo = mercanteAlterado.ImgLogo;
-    if (!String.IsNullOrEmpty(mercante.NrCnpj)) mercante.NrCnpj = mercanteAlterado.NrCnpj;
+    if (!String.IsNullOrEmpty(mercanteAlterado.NmLoja)) mercante.NmLoja = mercanteAlterado.NmLoja;
+    if (!String.IsNullOrEmpty(mercanteAlterado.DsLoja)) mercante.DsLoja = mercanteAlterado.DsLoja;
+    if (!String.IsNullOrEmpty(mercanteAlterado.ImgLogo)) mercante.ImgLogo = mercanteAlterado.ImgLogo;
+    if (!String.IsNullOrEmpty(mercanteAlterado.NrCnpj)) mercante.NrCnpj = mercanteAlterado.NrCnpj;
 
     _db.SaveChanges();
 
@@ -612,17 +626,27 @@ app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProdutoImagem novaImagem
 ) =>
 {
-    if (String.IsNullOrEmpty(novaImagem.ImgProduto))
+    if (String.IsNullOrEmpty(novaImagem.ImgProdutoLink))
     {
-        return Results.BadRequest(new { mensagem = "Não é possivel incluir uma imagem sem endereço." });
+        return Results.BadRequest(new { mensagem = "Não é possivel incluir uma imagem sem pelo menos uma url." });
     }
 
     var produtoImagem = new TbProdutoImagem
     {
-        ImgProduto = novaImagem.ImgProduto,
+        ImgProdutoLink = null,
+        ImgProduto = null,
         DsImagemProduto = novaImagem.DsImagemProduto,
         FkCdProduto = novaImagem.FkCdProduto
     };
+
+    if (novaImagem.ImgProduto != null) {
+        produtoImagem.ImgProduto = novaImagem.ImgProduto;
+    }
+
+    if (!String.IsNullOrEmpty(novaImagem.ImgProdutoLink))
+    {
+        produtoImagem.ImgProdutoLink = novaImagem.ImgProdutoLink;
+    }
 
     _db.TbProdutoImagem.Add(produtoImagem);
     _db.SaveChanges();
@@ -649,7 +673,7 @@ app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromSer
         return Results.NotFound();
     }
 
-    if (!String.IsNullOrEmpty(produtoImagemAlterado.ImgProduto)) produtoImagem.ImgProduto = produtoImagemAlterado.ImgProduto;
+    if (!String.IsNullOrEmpty(produtoImagemAlterado.ImgProdutoLink)) produtoImagem.ImgProdutoLink = produtoImagemAlterado.ImgProdutoLink;
     if (!String.IsNullOrEmpty(produtoImagemAlterado.DsImagemProduto)) produtoImagem.DsImagemProduto = produtoImagemAlterado.DsImagemProduto;
 
     _db.SaveChanges();
@@ -675,75 +699,34 @@ app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContex
 }).RequireAuthorization();
 // FINAL IMAGENS PRODUTOS
 
-// COMEÇO CARRINHO
-app.MapGet("/api/carrinho/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
-) =>
-{
-    var query = _db.TbCarrinho.AsQueryable<TbCarrinho>();
-    var carrinho = query.ToList<TbCarrinho>().Where(c => c.FkCdCliente == idCliente);
-
-    if (carrinho == null)
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(carrinho);
-}).RequireAuthorization();
-
-app.MapPost("/api/carrinho/{idCliente}", ([FromServices] bdbuygeContext _db,
-[FromRoute] int idCliente
-) =>
-{
-    var query = _db.TbCarrinho.AsQueryable<TbCarrinho>();
-    var carrinho = query.ToList<TbCarrinho>().Where(c => c.FkCdCliente == idCliente);
-
-    if (carrinho.ToArray().Length >= 1)
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido adicionar mais de um carrinho por cliente." });
-    }
-
-    var novoCarrinho = new TbCarrinho
-    {
-        FkCdCliente = idCliente
-    };
-
-    _db.TbCarrinho.Add(novoCarrinho);
-    _db.SaveChanges();
-
-    var carrinhoUrl = $"/api/carrinho/{novoCarrinho.CdCarrinho}";
-
-    return Results.Created(carrinhoUrl, novoCarrinho);
-}).RequireAuthorization();
-// FINAL CARRINHO
-
 // COMEÇO ITEM CARRINHO
-app.MapGet("/api/carrinho/items/{idCarrinho}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCarrinho) =>
+app.MapGet("/api/carrinho/items/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
 {
     var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
-    var items = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCarrinho == idCarrinho);
+    var items = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
     return Results.Ok(items);
 }).RequireAuthorization();
 
-app.MapPost("/api/carrinho/items/{idCarrinho}/{idProduto}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idCarrinho, [FromRoute] int idProduto
+app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idCliente, [FromRoute] int idProduto
 ) =>
 {
     var itemCarrinho = new TbItemCarrinho
     {
         FkCdProduto = idProduto,
-        FkCdCarrinho = idCarrinho
+        FkCdCliente = idCliente
     };
 
     _db.TbItemCarrinho.Add(itemCarrinho);
     _db.SaveChanges();
 
-    var itemCarrinhoUrl = $"/api/carrinho/items/{itemCarrinho.FkCdCarrinho}/{itemCarrinho.FkCdProduto}";
+    var itemCarrinhoUrl = $"/api/carrinho/items/{itemCarrinho.FkCdCliente}";
 
     return Results.Created(itemCarrinhoUrl, itemCarrinho);
 }).RequireAuthorization();
 
-app.MapDelete("/api/carrinho/items/{idCarrinho}/{idItemCarrinho}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idCarrinho, [FromRoute] int idItemCarrinho
+app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idItemCarrinho
 ) =>
 {
     var itemCarrinho = _db.TbItemCarrinho.Find(idItemCarrinho);
@@ -760,69 +743,28 @@ app.MapDelete("/api/carrinho/items/{idCarrinho}/{idItemCarrinho}", ([FromService
 }).RequireAuthorization();
 // FINAL ITEM CARRINHO
 
-// COMEÇO FAVORITO
-app.MapGet("/api/favoritos/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
-) =>
-{
-    var query = _db.TbFavorito.AsQueryable<TbFavorito>();
-    var favoritos = query.ToList<TbFavorito>().Where(f => f.FkCdCliente == idCliente);
-
-    if (favoritos == null)
-    {
-        return Results.NotFound();
-    }
-
-    return Results.Ok(favoritos);
-}).RequireAuthorization();
-
-app.MapPost("/api/favoritos/{idCliente}", ([FromServices] bdbuygeContext _db,
-[FromRoute] int idCliente
-) =>
-{
-    var query = _db.TbFavorito.AsQueryable<TbFavorito>();
-    var favorito = query.ToList<TbFavorito>().Where(c => c.FkCdCliente == idCliente);
-
-    if (favorito.ToArray().Length >= 1)
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido adicionar mais de uma lista de favoritos por cliente." });
-    }
-
-    var novoFavorito = new TbFavorito
-    {
-        FkCdCliente = idCliente
-    };
-
-    _db.TbFavorito.Add(novoFavorito);
-    _db.SaveChanges();
-
-    var favoritoUrl = $"/api/favoritos/{novoFavorito.FkCdCliente}/{novoFavorito.CdFavorito}";
-
-    return Results.Created(favoritoUrl, novoFavorito);
-}).RequireAuthorization();
-// FINAL FAVORITO
-
 // COMEÇO ITEM FAVORITO
-app.MapGet("/api/favorito/items/{idFavorito}", ([FromServices] bdbuygeContext _db, [FromRoute] int idFavorito) =>
+app.MapGet("/api/favorito/items/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
 {
     var query = _db.TbItemFavorito.AsQueryable<TbItemFavorito>();
-    var items = query.ToList<TbItemFavorito>().Where(i => i.FkCdFavorito == idFavorito);
+    var items = query.ToList<TbItemFavorito>().Where(i => i.FkCdCliente == idCliente);
     return Results.Ok(items);
 }).RequireAuthorization();
 
-app.MapPost("/api/favorito/items/{idFavorito}/{idProduto}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idFavorito, [FromRoute] int idProduto
+app.MapPost("/api/favorito/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idCliente, [FromRoute] int idProduto
 ) =>
 {
     var itemFavorito = new TbItemFavorito
     {
-        FkCdFavorito = idFavorito,
+        FkCdCliente = idCliente,
         FkCdProduto = idProduto
     };
 
     _db.TbItemFavorito.Add(itemFavorito);
     _db.SaveChanges();
 
-    var itemFavoritoUrl = $"/api/favorito/items/{itemFavorito.FkCdFavorito}/{itemFavorito.FkCdProduto}";
+    var itemFavoritoUrl = $"/api/favorito/items/{itemFavorito.FkCdCliente}";
 
     return Results.Created(itemFavoritoUrl, itemFavorito);
 }).RequireAuthorization();

@@ -7,10 +7,10 @@ namespace buyge_backend.db
     {
         public TbCliente()
         {
-            TbCarrinho = new HashSet<TbCarrinho>();
             TbCompra = new HashSet<TbCompra>();
             TbEndereco = new HashSet<TbEndereco>();
-            TbFavorito = new HashSet<TbFavorito>();
+            TbItemCarrinho = new HashSet<TbItemCarrinho>();
+            TbItemFavorito = new HashSet<TbItemFavorito>();
             TbMercante = new HashSet<TbMercante>();
         }
 
@@ -22,11 +22,13 @@ namespace buyge_backend.db
         public string NrTelefone { get; set; } = null!;
         public string NmLogin { get; set; } = null!;
         public string NmSenha { get; set; } = null!;
+        public int FkCdTipoConta { get; set; }
 
-        public virtual ICollection<TbCarrinho> TbCarrinho { get; set; }
+        public virtual TbTipoConta FkCdTipoContaNavigation { get; set; } = null!;
         public virtual ICollection<TbCompra> TbCompra { get; set; }
         public virtual ICollection<TbEndereco> TbEndereco { get; set; }
-        public virtual ICollection<TbFavorito> TbFavorito { get; set; }
+        public virtual ICollection<TbItemCarrinho> TbItemCarrinho { get; set; }
+        public virtual ICollection<TbItemFavorito> TbItemFavorito { get; set; }
         public virtual ICollection<TbMercante> TbMercante { get; set; }
     }
 }

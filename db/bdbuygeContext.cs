@@ -16,18 +16,17 @@ namespace buyge_backend.db
         {
         }
 
-        public virtual DbSet<TbCarrinho> TbCarrinho { get; set; } = null!;
         public virtual DbSet<TbCategoria> TbCategoria { get; set; } = null!;
         public virtual DbSet<TbCliente> TbCliente { get; set; } = null!;
         public virtual DbSet<TbCompra> TbCompra { get; set; } = null!;
         public virtual DbSet<TbEndereco> TbEndereco { get; set; } = null!;
-        public virtual DbSet<TbFavorito> TbFavorito { get; set; } = null!;
         public virtual DbSet<TbItemCarrinho> TbItemCarrinho { get; set; } = null!;
         public virtual DbSet<TbItemCompra> TbItemCompra { get; set; } = null!;
         public virtual DbSet<TbItemFavorito> TbItemFavorito { get; set; } = null!;
         public virtual DbSet<TbMercante> TbMercante { get; set; } = null!;
         public virtual DbSet<TbProduto> TbProduto { get; set; } = null!;
         public virtual DbSet<TbProdutoImagem> TbProdutoImagem { get; set; } = null!;
+        public virtual DbSet<TbTipoConta> TbTipoConta { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -38,30 +37,6 @@ namespace buyge_backend.db
         {
             modelBuilder.UseCollation("utf8mb4_general_ci")
                 .HasCharSet("utf8mb4");
-
-            modelBuilder.Entity<TbCarrinho>(entity =>
-            {
-                entity.HasKey(e => e.CdCarrinho)
-                    .HasName("PRIMARY");
-
-                entity.ToTable("tb_carrinho");
-
-                entity.HasIndex(e => e.FkCdCliente, "fk_cd_cliente");
-
-                entity.Property(e => e.CdCarrinho)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("cd_carrinho");
-
-                entity.Property(e => e.FkCdCliente)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("fk_cd_cliente");
-
-                entity.HasOne(d => d.FkCdClienteNavigation)
-                    .WithMany(p => p.TbCarrinho)
-                    .HasForeignKey(d => d.FkCdCliente)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("tb_carrinho_ibfk_1");
-            });
 
             modelBuilder.Entity<TbCategoria>(entity =>
             {
@@ -88,6 +63,8 @@ namespace buyge_backend.db
 
                 entity.ToTable("tb_cliente");
 
+                entity.HasIndex(e => e.FkCdTipoConta, "fk_cd_tipo_conta");
+
                 entity.HasIndex(e => e.NmLogin, "nm_login")
                     .IsUnique();
 
@@ -96,6 +73,10 @@ namespace buyge_backend.db
                     .HasColumnName("cd_cliente");
 
                 entity.Property(e => e.DtNascimento).HasColumnName("dt_nascimento");
+
+                entity.Property(e => e.FkCdTipoConta)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("fk_cd_tipo_conta");
 
                 entity.Property(e => e.NmCliente)
                     .HasMaxLength(40)
@@ -122,6 +103,12 @@ namespace buyge_backend.db
                     .HasMaxLength(11)
                     .HasColumnName("nr_telefone")
                     .IsFixedLength();
+
+                entity.HasOne(d => d.FkCdTipoContaNavigation)
+                    .WithMany(p => p.TbCliente)
+                    .HasForeignKey(d => d.FkCdTipoConta)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("tb_cliente_ibfk_1");
             });
 
             modelBuilder.Entity<TbCompra>(entity =>
@@ -202,30 +189,6 @@ namespace buyge_backend.db
                     .HasConstraintName("tb_endereco_ibfk_1");
             });
 
-            modelBuilder.Entity<TbFavorito>(entity =>
-            {
-                entity.HasKey(e => e.CdFavorito)
-                    .HasName("PRIMARY");
-
-                entity.ToTable("tb_favorito");
-
-                entity.HasIndex(e => e.FkCdCliente, "fk_cd_cliente");
-
-                entity.Property(e => e.CdFavorito)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("cd_favorito");
-
-                entity.Property(e => e.FkCdCliente)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("fk_cd_cliente");
-
-                entity.HasOne(d => d.FkCdClienteNavigation)
-                    .WithMany(p => p.TbFavorito)
-                    .HasForeignKey(d => d.FkCdCliente)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("tb_favorito_ibfk_1");
-            });
-
             modelBuilder.Entity<TbItemCarrinho>(entity =>
             {
                 entity.HasKey(e => e.CdItemCarrinho)
@@ -233,7 +196,7 @@ namespace buyge_backend.db
 
                 entity.ToTable("tb_item_carrinho");
 
-                entity.HasIndex(e => e.FkCdCarrinho, "fk_cd_carrinho");
+                entity.HasIndex(e => e.FkCdCliente, "fk_cd_cliente");
 
                 entity.HasIndex(e => e.FkCdProduto, "fk_cd_produto");
 
@@ -241,17 +204,17 @@ namespace buyge_backend.db
                     .HasColumnType("int(11)")
                     .HasColumnName("cd_item_carrinho");
 
-                entity.Property(e => e.FkCdCarrinho)
+                entity.Property(e => e.FkCdCliente)
                     .HasColumnType("int(11)")
-                    .HasColumnName("fk_cd_carrinho");
+                    .HasColumnName("fk_cd_cliente");
 
                 entity.Property(e => e.FkCdProduto)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_produto");
 
-                entity.HasOne(d => d.FkCdCarrinhoNavigation)
+                entity.HasOne(d => d.FkCdClienteNavigation)
                     .WithMany(p => p.TbItemCarrinho)
-                    .HasForeignKey(d => d.FkCdCarrinho)
+                    .HasForeignKey(d => d.FkCdCliente)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("tb_item_carrinho_ibfk_2");
 
@@ -309,7 +272,7 @@ namespace buyge_backend.db
 
                 entity.ToTable("tb_item_favorito");
 
-                entity.HasIndex(e => e.FkCdFavorito, "fk_cd_favorito");
+                entity.HasIndex(e => e.FkCdCliente, "fk_cd_cliente");
 
                 entity.HasIndex(e => e.FkCdProduto, "fk_cd_produto");
 
@@ -317,17 +280,17 @@ namespace buyge_backend.db
                     .HasColumnType("int(11)")
                     .HasColumnName("cd_item_favorito");
 
-                entity.Property(e => e.FkCdFavorito)
+                entity.Property(e => e.FkCdCliente)
                     .HasColumnType("int(11)")
-                    .HasColumnName("fk_cd_favorito");
+                    .HasColumnName("fk_cd_cliente");
 
                 entity.Property(e => e.FkCdProduto)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_produto");
 
-                entity.HasOne(d => d.FkCdFavoritoNavigation)
+                entity.HasOne(d => d.FkCdClienteNavigation)
                     .WithMany(p => p.TbItemFavorito)
-                    .HasForeignKey(d => d.FkCdFavorito)
+                    .HasForeignKey(d => d.FkCdCliente)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("tb_item_favorito_ibfk_2");
 
@@ -403,7 +366,7 @@ namespace buyge_backend.db
                     .HasColumnName("fk_cd_mercante");
 
                 entity.Property(e => e.NmProduto)
-                    .HasMaxLength(30)
+                    .HasMaxLength(60)
                     .HasColumnName("nm_produto");
 
                 entity.Property(e => e.QtProduto)
@@ -446,15 +409,33 @@ namespace buyge_backend.db
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_produto");
 
-                entity.Property(e => e.ImgProduto)
+                entity.Property(e => e.ImgProduto).HasColumnName("img_produto");
+
+                entity.Property(e => e.ImgProdutoLink)
                     .HasColumnType("mediumtext")
-                    .HasColumnName("img_produto");
+                    .HasColumnName("img_produto_link");
 
                 entity.HasOne(d => d.FkCdProdutoNavigation)
                     .WithMany(p => p.TbProdutoImagem)
                     .HasForeignKey(d => d.FkCdProduto)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("tb_produto_imagem_ibfk_1");
+            });
+
+            modelBuilder.Entity<TbTipoConta>(entity =>
+            {
+                entity.HasKey(e => e.CdTipoConta)
+                    .HasName("PRIMARY");
+
+                entity.ToTable("tb_tipo_conta");
+
+                entity.Property(e => e.CdTipoConta)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("cd_tipo_conta");
+
+                entity.Property(e => e.NmTipoConta)
+                    .HasMaxLength(12)
+                    .HasColumnName("nm_tipo_conta");
             });
 
             OnModelCreatingPartial(modelBuilder);
