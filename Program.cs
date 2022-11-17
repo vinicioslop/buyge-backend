@@ -1,4 +1,3 @@
-using System.Security.Claims;
 using System.Text;
 using buyge_backend;
 using buyge_backend.db;
@@ -82,7 +81,7 @@ app.MapPost("/api/login", ([FromServices] bdbuygeContext _db, [FromBody] User us
             token = token
         }
     );
-});
+}).AllowAnonymous();
 
 // COMEÇO CLIENTES
 app.MapGet("/api/clientes", ([FromServices] bdbuygeContext _db) =>
@@ -293,7 +292,7 @@ app.MapGet("/api/categorias", ([FromServices] bdbuygeContext _db) =>
     var query = _db.TbCategoria.AsQueryable<TbCategoria>();
     var categorias = query.ToList<TbCategoria>();
     return Results.Ok(categorias);
-});
+}).AllowAnonymous();
 
 app.MapGet("/api/categorias/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
@@ -305,7 +304,7 @@ app.MapGet("/api/categorias/{id}", ([FromServices] bdbuygeContext _db, [FromRout
     }
 
     return Results.Ok(categoria);
-});
+}).AllowAnonymous();
 
 app.MapPost("/api/categorias", ([FromServices] bdbuygeContext _db,
     [FromBody] TbCategoria novaCategoria
@@ -384,7 +383,7 @@ app.MapGet("/api/mercantes", ([FromServices] bdbuygeContext _db) =>
     var query = _db.TbMercante.AsQueryable<TbMercante>();
     var mercantes = query.ToList<TbMercante>();
     return Results.Ok(mercantes);
-});
+}).AllowAnonymous();
 
 app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
@@ -396,7 +395,7 @@ app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute
     }
 
     return Results.Ok(mercante);
-});
+}).AllowAnonymous();
 
 app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
@@ -412,6 +411,7 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
         NmLoja = novoMercante.NmLoja,
         DsLoja = novoMercante.DsLoja,
         ImgLogo = novoMercante.ImgLogo,
+        NrCnpj = novoMercante.NrCnpj,
         FkCdCliente = novoMercante.FkCdCliente
     };
 
@@ -474,7 +474,7 @@ app.MapGet("/api/produtos", ([FromServices] bdbuygeContext _db) =>
     var query = _db.TbProduto.AsQueryable<TbProduto>();
     var produtos = query.ToList<TbProduto>();
     return Results.Ok(produtos);
-});
+}).AllowAnonymous();
 
 app.MapGet("/api/produtos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
@@ -581,9 +581,9 @@ app.MapGet("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db) =
     var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
     var produtosImagens = query.ToList<TbProdutoImagem>();
     return Results.Ok(produtosImagens);
-});
+}).AllowAnonymous();
 
-app.MapGet("/api/produtoss/produto-imagem/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+app.MapGet("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
     var imagem = _db.TbProdutoImagem.Find(id);
 
@@ -593,7 +593,7 @@ app.MapGet("/api/produtoss/produto-imagem/{id}", ([FromServices] bdbuygeContext 
     }
 
     return Results.Ok(imagem);
-});
+}).AllowAnonymous();
 
 app.MapGet("/api/produtos/produto-imagem/{id}/todas", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
@@ -606,7 +606,7 @@ app.MapGet("/api/produtos/produto-imagem/{id}/todas", ([FromServices] bdbuygeCon
     }
 
     return Results.Ok(produtoImagens);
-});
+}).AllowAnonymous();
 
 app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProdutoImagem novaImagem
