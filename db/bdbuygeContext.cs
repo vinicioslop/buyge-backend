@@ -26,7 +26,6 @@ namespace buyge_backend.db
         public virtual DbSet<TbMercante> TbMercante { get; set; } = null!;
         public virtual DbSet<TbProduto> TbProduto { get; set; } = null!;
         public virtual DbSet<TbProdutoImagem> TbProdutoImagem { get; set; } = null!;
-        public virtual DbSet<TbTipoConta> TbTipoConta { get; set; } = null!;
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -63,8 +62,6 @@ namespace buyge_backend.db
 
                 entity.ToTable("tb_cliente");
 
-                entity.HasIndex(e => e.FkCdTipoConta, "fk_cd_tipo_conta");
-
                 entity.HasIndex(e => e.NmLogin, "nm_login")
                     .IsUnique();
 
@@ -73,10 +70,6 @@ namespace buyge_backend.db
                     .HasColumnName("cd_cliente");
 
                 entity.Property(e => e.DtNascimento).HasColumnName("dt_nascimento");
-
-                entity.Property(e => e.FkCdTipoConta)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("fk_cd_tipo_conta");
 
                 entity.Property(e => e.NmCliente)
                     .HasMaxLength(40)
@@ -94,6 +87,10 @@ namespace buyge_backend.db
                     .HasMaxLength(60)
                     .HasColumnName("nm_sobrenome");
 
+                entity.Property(e => e.NmTipoConta)
+                    .HasMaxLength(12)
+                    .HasColumnName("nm_tipo_conta");
+
                 entity.Property(e => e.NrCpf)
                     .HasMaxLength(11)
                     .HasColumnName("nr_cpf")
@@ -103,12 +100,6 @@ namespace buyge_backend.db
                     .HasMaxLength(11)
                     .HasColumnName("nr_telefone")
                     .IsFixedLength();
-
-                entity.HasOne(d => d.FkCdTipoContaNavigation)
-                    .WithMany(p => p.TbCliente)
-                    .HasForeignKey(d => d.FkCdTipoConta)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("tb_cliente_ibfk_1");
             });
 
             modelBuilder.Entity<TbCompra>(entity =>
@@ -366,7 +357,7 @@ namespace buyge_backend.db
                     .HasColumnName("fk_cd_mercante");
 
                 entity.Property(e => e.NmProduto)
-                    .HasMaxLength(60)
+                    .HasMaxLength(40)
                     .HasColumnName("nm_produto");
 
                 entity.Property(e => e.QtProduto)
@@ -420,22 +411,6 @@ namespace buyge_backend.db
                     .HasForeignKey(d => d.FkCdProduto)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("tb_produto_imagem_ibfk_1");
-            });
-
-            modelBuilder.Entity<TbTipoConta>(entity =>
-            {
-                entity.HasKey(e => e.CdTipoConta)
-                    .HasName("PRIMARY");
-
-                entity.ToTable("tb_tipo_conta");
-
-                entity.Property(e => e.CdTipoConta)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("cd_tipo_conta");
-
-                entity.Property(e => e.NmTipoConta)
-                    .HasMaxLength(12)
-                    .HasColumnName("nm_tipo_conta");
             });
 
             OnModelCreatingPartial(modelBuilder);

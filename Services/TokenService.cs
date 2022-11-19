@@ -16,7 +16,7 @@ namespace buyge_backend
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, cliente.NmCliente),
-                    new Claim(ClaimTypes.Role, "user")
+                    new Claim(ClaimTypes.Role, cliente.NmTipoConta)
                 }),
                 Expires = DateTime.UtcNow.AddMinutes(10),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
