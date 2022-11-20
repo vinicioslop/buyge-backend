@@ -62,7 +62,7 @@ namespace buyge_backend.db
 
                 entity.ToTable("tb_cliente");
 
-                entity.HasIndex(e => e.NmLogin, "nm_login")
+                entity.HasIndex(e => e.NmEmail, "nm_email")
                     .IsUnique();
 
                 entity.Property(e => e.CdCliente)
@@ -72,19 +72,19 @@ namespace buyge_backend.db
                 entity.Property(e => e.DtNascimento).HasColumnName("dt_nascimento");
 
                 entity.Property(e => e.NmCliente)
-                    .HasMaxLength(40)
+                    .HasMaxLength(50)
                     .HasColumnName("nm_cliente");
 
-                entity.Property(e => e.NmLogin)
-                    .HasMaxLength(30)
-                    .HasColumnName("nm_login");
+                entity.Property(e => e.NmEmail)
+                    .HasMaxLength(100)
+                    .HasColumnName("nm_email");
 
                 entity.Property(e => e.NmSenha)
                     .HasMaxLength(16)
                     .HasColumnName("nm_senha");
 
                 entity.Property(e => e.NmSobrenome)
-                    .HasMaxLength(60)
+                    .HasMaxLength(50)
                     .HasColumnName("nm_sobrenome");
 
                 entity.Property(e => e.NmTipoConta)
@@ -311,12 +311,14 @@ namespace buyge_backend.db
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_cliente");
 
-                entity.Property(e => e.ImgLogo)
+                entity.Property(e => e.ImgLogo).HasColumnName("img_logo");
+
+                entity.Property(e => e.ImgLogoLink)
                     .HasColumnType("mediumtext")
-                    .HasColumnName("img_logo");
+                    .HasColumnName("img_logo_link");
 
                 entity.Property(e => e.NmLoja)
-                    .HasMaxLength(30)
+                    .HasMaxLength(100)
                     .HasColumnName("nm_loja");
 
                 entity.Property(e => e.NrCnpj)
@@ -399,6 +401,10 @@ namespace buyge_backend.db
                 entity.Property(e => e.FkCdProduto)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_produto");
+
+                entity.Property(e => e.IdPrincipal)
+                    .HasColumnType("int(1)")
+                    .HasColumnName("id_principal");
 
                 entity.Property(e => e.ImgProduto).HasColumnName("img_produto");
 

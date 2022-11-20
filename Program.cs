@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(x =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Padrão", policy => policy.RequireRole("Padrão"));
-    options.AddPolicy("Mercador", policy => policy.RequireRole("Mercador"));
+    options.AddPolicy("Lojista", policy => policy.RequireRole("Lojista"));
 });
 
 var app = builder.Build();
@@ -62,7 +62,7 @@ app.UseAuthorization();
 app.MapPost("/api/login", ([FromServices] bdbuygeContext _db, [FromBody] User user) =>
 {
     var query = _db.TbCliente.AsQueryable<TbCliente>();
-    var clientes = query.ToList<TbCliente>().Where(c => c.NmLogin == user.login && c.NmSenha == user.senha);
+    var clientes = query.ToList<TbCliente>().Where(c => c.NmEmail == user.login && c.NmSenha == user.senha);
 
     var cliente = clientes.FirstOrDefault();
 
@@ -84,6 +84,11 @@ app.MapPost("/api/login", ([FromServices] bdbuygeContext _db, [FromBody] User us
     );
 }).AllowAnonymous();
 
+app.MapGet("/api/token", ([FromServices] bdbuygeContext _db) =>
+{
+    return Results.Ok();
+}).RequireAuthorization();
+
 // COMEÇO CLIENTES
 app.MapGet("/api/clientes", ([FromServices] bdbuygeContext _db) =>
 {
@@ -95,7 +100,7 @@ app.MapGet("/api/clientes", ([FromServices] bdbuygeContext _db) =>
             clientes = clientes
         }
     );
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapGet("/api/clientes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
@@ -121,11 +126,8 @@ app.MapPost("/api/clientes", ([FromServices] bdbuygeContext _db,
     var cliente = new TbCliente
     {
         NmCliente = novoCliente.NmCliente,
-        NmSobrenome = novoCliente.NmSobrenome,
-        NrCpf = novoCliente.NrCpf,
         DtNascimento = novoCliente.DtNascimento,
-        NrTelefone = novoCliente.NrTelefone,
-        NmLogin = novoCliente.NmLogin,
+        NmEmail = novoCliente.NmEmail,
         NmSenha = novoCliente.NmSenha,
         NmTipoConta = novoCliente.NmTipoConta
     };
@@ -165,7 +167,7 @@ app.MapPut("/api/clientes/{id}", ([FromServices] bdbuygeContext _db,
     cliente.NmSobrenome = clienteAlterado.NmSobrenome;
     cliente.DtNascimento = clienteAlterado.DtNascimento;
     cliente.NrTelefone = clienteAlterado.NrTelefone;
-    cliente.NmLogin = clienteAlterado.NmLogin;
+    cliente.NmEmail = clienteAlterado.NmEmail;
     cliente.NmSenha = clienteAlterado.NmSenha;
 
     _db.SaveChanges();
@@ -399,11 +401,11 @@ app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute
     return Results.Ok(mercante);
 }).AllowAnonymous();
 
-app.MapGet("/api/mercantes/mercador/{idMercador}", ([FromServices] bdbuygeContext _db, [FromRoute] int idMercador
+app.MapGet("/api/mercantes/lojista/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
 ) =>
 {
     var query = _db.TbMercante.AsQueryable<TbMercante>();
-    var mercantes = query.ToList<TbMercante>().Where(m => m.FkCdCliente == idMercador);
+    var mercantes = query.ToList<TbMercante>().Where(m => m.FkCdCliente == id);
 
     if (mercantes == null)
     {
@@ -411,7 +413,7 @@ app.MapGet("/api/mercantes/mercador/{idMercador}", ([FromServices] bdbuygeContex
     }
 
     return Results.Ok(mercantes);
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
@@ -426,7 +428,8 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     {
         NmLoja = novoMercante.NmLoja,
         DsLoja = novoMercante.DsLoja,
-        ImgLogo = novoMercante.ImgLogo,
+        ImgLogoLink = novoMercante.ImgLogoLink,
+        ImgLogo = null,
         NrCnpj = novoMercante.NrCnpj,
         FkCdCliente = novoMercante.FkCdCliente
     };
@@ -437,7 +440,7 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     var mercanteUrl = $"/api/mercantes/{mercante.CdMercante}";
 
     return Results.Created(mercanteUrl, mercante);
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int idMercante,
@@ -456,15 +459,20 @@ app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices]
         return Results.NotFound();
     }
 
+    if (mercante.FkCdCliente != mercanteAlterado.FkCdCliente)
+    {
+        return Results.BadRequest(new { mensagem = "Cliente não possui permissão de alterar loja." });
+    }
+
     if (!String.IsNullOrEmpty(mercanteAlterado.NmLoja)) mercante.NmLoja = mercanteAlterado.NmLoja;
     if (!String.IsNullOrEmpty(mercanteAlterado.DsLoja)) mercante.DsLoja = mercanteAlterado.DsLoja;
-    if (!String.IsNullOrEmpty(mercanteAlterado.ImgLogo)) mercante.ImgLogo = mercanteAlterado.ImgLogo;
+    if (!String.IsNullOrEmpty(mercanteAlterado.ImgLogoLink)) mercante.ImgLogoLink = mercanteAlterado.ImgLogoLink;
     if (!String.IsNullOrEmpty(mercanteAlterado.NrCnpj)) mercante.NrCnpj = mercanteAlterado.NrCnpj;
 
     _db.SaveChanges();
 
     return Results.Ok(mercante);
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapDelete("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
@@ -481,7 +489,7 @@ app.MapDelete("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 // FINAL MERCANTES
 
 // COMEÇO PRODUTOS
@@ -543,7 +551,7 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     var produtoUrl = $"/api/produtos/{produto.CdProduto}";
 
     return Results.Created(produtoUrl, produto);
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
@@ -570,8 +578,8 @@ app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeC
 
     _db.SaveChanges();
 
-    return Results.Ok(produto);
-}).RequireAuthorization("Mercador");
+    return Results.Ok();
+}).RequireAuthorization("Lojista");
 
 app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
@@ -588,7 +596,7 @@ app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 // FINAL PRODUTOS
 
 // COMEÇO IMAGENS PRODUTOS
@@ -628,26 +636,32 @@ app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProdutoImagem novaImagem
 ) =>
 {
-    if (String.IsNullOrEmpty(novaImagem.ImgProdutoLink))
-    {
-        return Results.BadRequest(new { mensagem = "Não é possivel incluir uma imagem sem pelo menos uma url." });
-    }
+    Boolean valido = false;
 
     var produtoImagem = new TbProdutoImagem
     {
         ImgProdutoLink = null,
         ImgProduto = null,
         DsImagemProduto = novaImagem.DsImagemProduto,
+        IdPrincipal = novaImagem.IdPrincipal,
         FkCdProduto = novaImagem.FkCdProduto
     };
 
-    if (novaImagem.ImgProduto != null) {
+    if (novaImagem.ImgProduto != null)
+    {
         produtoImagem.ImgProduto = novaImagem.ImgProduto;
+        valido = true;
     }
 
     if (!String.IsNullOrEmpty(novaImagem.ImgProdutoLink))
     {
         produtoImagem.ImgProdutoLink = novaImagem.ImgProdutoLink;
+        valido = true;
+    }
+
+    if (!valido)
+    {
+        return Results.BadRequest(new { mensagem = "Não é possível inserir uma imagem sem pelo menos 1 fonte;" });
     }
 
     _db.TbProdutoImagem.Add(produtoImagem);
@@ -656,7 +670,7 @@ app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     var produtoImagemUrl = $"/api/produtos/produto-imagens/{produtoImagem.CdProdutoImagem}";
 
     return Results.Created(produtoImagemUrl, produtoImagem);
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
@@ -681,7 +695,7 @@ app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromSer
     _db.SaveChanges();
 
     return Results.Ok(produtoImagem);
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 
 app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
@@ -698,7 +712,7 @@ app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContex
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Mercador");
+}).RequireAuthorization("Lojista");
 // FINAL IMAGENS PRODUTOS
 
 // COMEÇO ITEM CARRINHO
@@ -707,7 +721,7 @@ app.MapGet("/api/carrinho/items/{idCliente}", ([FromServices] bdbuygeContext _db
     var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
     var items = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
     return Results.Ok(items);
-}).RequireAuthorization("Padrão", "Mercador");
+}).RequireAuthorization();
 
 app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idCliente, [FromRoute] int idProduto
@@ -725,7 +739,7 @@ app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
     var itemCarrinhoUrl = $"/api/carrinho/items/{itemCarrinho.FkCdCliente}";
 
     return Results.Created(itemCarrinhoUrl, itemCarrinho);
-}).RequireAuthorization("Padrão", "Mercador");
+}).RequireAuthorization();
 
 app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idItemCarrinho
@@ -742,7 +756,7 @@ app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeCon
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Padrão", "Mercador");
+}).RequireAuthorization();
 // FINAL ITEM CARRINHO
 
 // COMEÇO ITEM FAVORITO
@@ -751,7 +765,7 @@ app.MapGet("/api/favorito/items/{idCliente}", ([FromServices] bdbuygeContext _db
     var query = _db.TbItemFavorito.AsQueryable<TbItemFavorito>();
     var items = query.ToList<TbItemFavorito>().Where(i => i.FkCdCliente == idCliente);
     return Results.Ok(items);
-}).RequireAuthorization("Padrão", "Mercador");
+}).RequireAuthorization();
 
 app.MapPost("/api/favorito/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idCliente, [FromRoute] int idProduto
@@ -769,7 +783,7 @@ app.MapPost("/api/favorito/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
     var itemFavoritoUrl = $"/api/favorito/items/{itemFavorito.FkCdCliente}";
 
     return Results.Created(itemFavoritoUrl, itemFavorito);
-}).RequireAuthorization("Padrão", "Mercador");
+}).RequireAuthorization();
 
 app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idItemFavorito
@@ -786,6 +800,6 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Padrão", "Mercador");
+}).RequireAuthorization();
 // FINAL ITEM FAVORITO
 app.Run();

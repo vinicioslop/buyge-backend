@@ -13,7 +13,8 @@ namespace buyge_backend.db
         public int CdMercante { get; set; }
         public string NmLoja { get; set; } = null!;
         public string DsLoja { get; set; } = null!;
-        public string ImgLogo { get; set; } = null!;
+        public string? ImgLogoLink { get; set; }
+        public byte[]? ImgLogo { get; set; }
         public string NrCnpj { get; set; } = null!;
         public int FkCdCliente { get; set; }
 
