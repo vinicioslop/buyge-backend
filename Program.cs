@@ -141,7 +141,7 @@ app.MapPost("/api/clientes", ([FromServices] bdbuygeContext _db,
     return Results.Created(clientesUrl, cliente);
 }).AllowAnonymous();
 
-app.MapPut("/api/clientes/{id}", ([FromServices] bdbuygeContext _db,
+app.MapMethods("/api/clientes/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
     [FromBody] TbCliente clienteAlterado
 ) =>
@@ -151,11 +151,6 @@ app.MapPut("/api/clientes/{id}", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Id inconsistente." });
     }
 
-    if (String.IsNullOrEmpty(clienteAlterado.NmCliente))
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido deixar um cliente sem nome." });
-    }
-
     var cliente = _db.TbCliente.Find(id);
 
     if (cliente == null)
@@ -163,16 +158,16 @@ app.MapPut("/api/clientes/{id}", ([FromServices] bdbuygeContext _db,
         return Results.NotFound();
     }
 
-    cliente.NmCliente = clienteAlterado.NmCliente;
-    cliente.NmSobrenome = clienteAlterado.NmSobrenome;
-    cliente.DtNascimento = clienteAlterado.DtNascimento;
-    cliente.NrTelefone = clienteAlterado.NrTelefone;
-    cliente.NmEmail = clienteAlterado.NmEmail;
-    cliente.NmSenha = clienteAlterado.NmSenha;
+    if (!String.IsNullOrEmpty(clienteAlterado.NmCliente)) cliente.NmCliente = clienteAlterado.NmCliente;
+    if (!String.IsNullOrEmpty(clienteAlterado.NmSobrenome)) cliente.NmSobrenome = clienteAlterado.NmSobrenome;
+    if (!String.IsNullOrEmpty(clienteAlterado.NrCpf)) cliente.NrCpf = clienteAlterado.NrCpf;
+    if (clienteAlterado.DtNascimento != null) cliente.DtNascimento = clienteAlterado.DtNascimento;
+    if (!String.IsNullOrEmpty(clienteAlterado.NrTelefone)) cliente.NrTelefone = clienteAlterado.NrTelefone;
+    if (!String.IsNullOrEmpty(clienteAlterado.NmEmail)) cliente.NmEmail = clienteAlterado.NmEmail;
 
     _db.SaveChanges();
 
-    return Results.Ok(cliente);
+    return Results.Ok();
 }).RequireAuthorization();
 
 app.MapDelete("/api/clientes/{id}", ([FromServices] bdbuygeContext _db,
