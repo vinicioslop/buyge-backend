@@ -20,6 +20,7 @@ namespace buyge_backend.db
         public virtual DbSet<TbCliente> TbCliente { get; set; } = null!;
         public virtual DbSet<TbCompra> TbCompra { get; set; } = null!;
         public virtual DbSet<TbEndereco> TbEndereco { get; set; } = null!;
+        public virtual DbSet<TbEnderecoLoja> TbEnderecoLoja { get; set; } = null!;
         public virtual DbSet<TbItemCarrinho> TbItemCarrinho { get; set; } = null!;
         public virtual DbSet<TbItemCompra> TbItemCompra { get; set; } = null!;
         public virtual DbSet<TbItemFavorito> TbItemFavorito { get; set; } = null!;
@@ -29,7 +30,7 @@ namespace buyge_backend.db
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -180,6 +181,56 @@ namespace buyge_backend.db
                     .HasConstraintName("tb_endereco_ibfk_1");
             });
 
+            modelBuilder.Entity<TbEnderecoLoja>(entity =>
+            {
+                entity.HasKey(e => e.CdEndereco)
+                    .HasName("PRIMARY");
+
+                entity.ToTable("tb_endereco_loja");
+
+                entity.HasIndex(e => e.FkCdMercante, "fk_cd_mercante");
+
+                entity.Property(e => e.CdEndereco)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("cd_endereco");
+
+                entity.Property(e => e.FkCdMercante)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("fk_cd_mercante");
+
+                entity.Property(e => e.NmBairro)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_bairro");
+
+                entity.Property(e => e.NmCidade)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_cidade");
+
+                entity.Property(e => e.NmLogradouro)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_logradouro");
+
+                entity.Property(e => e.NrCep)
+                    .HasMaxLength(8)
+                    .HasColumnName("nr_cep")
+                    .IsFixedLength();
+
+                entity.Property(e => e.NrEndereco)
+                    .HasColumnType("bigint(20)")
+                    .HasColumnName("nr_endereco");
+
+                entity.Property(e => e.SgEstado)
+                    .HasMaxLength(2)
+                    .HasColumnName("sg_estado")
+                    .IsFixedLength();
+
+                entity.HasOne(d => d.FkCdMercanteNavigation)
+                    .WithMany(p => p.TbEnderecoLoja)
+                    .HasForeignKey(d => d.FkCdMercante)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("tb_endereco_loja_ibfk_1");
+            });
+
             modelBuilder.Entity<TbItemCarrinho>(entity =>
             {
                 entity.HasKey(e => e.CdItemCarrinho)
@@ -225,19 +276,19 @@ namespace buyge_backend.db
 
                 entity.HasIndex(e => e.FkCdCompra, "fk_cd_compra");
 
-                entity.HasIndex(e => e.FkCdProduto, "fk_cd_produto");
-
                 entity.Property(e => e.CdItemCompra)
                     .HasColumnType("int(11)")
                     .HasColumnName("cd_item_compra");
+
+                entity.Property(e => e.DsProduto).HasColumnName("ds_produto");
 
                 entity.Property(e => e.FkCdCompra)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_compra");
 
-                entity.Property(e => e.FkCdProduto)
-                    .HasColumnType("int(11)")
-                    .HasColumnName("fk_cd_produto");
+                entity.Property(e => e.NmProduto)
+                    .HasMaxLength(40)
+                    .HasColumnName("nm_produto");
 
                 entity.Property(e => e.VlItemCompra)
                     .HasPrecision(8, 2)
@@ -246,12 +297,6 @@ namespace buyge_backend.db
                 entity.HasOne(d => d.FkCdCompraNavigation)
                     .WithMany(p => p.TbItemCompra)
                     .HasForeignKey(d => d.FkCdCompra)
-                    .OnDelete(DeleteBehavior.ClientSetNull)
-                    .HasConstraintName("tb_item_compra_ibfk_2");
-
-                entity.HasOne(d => d.FkCdProdutoNavigation)
-                    .WithMany(p => p.TbItemCompra)
-                    .HasForeignKey(d => d.FkCdProduto)
                     .OnDelete(DeleteBehavior.ClientSetNull)
                     .HasConstraintName("tb_item_compra_ibfk_1");
             });
@@ -317,6 +362,10 @@ namespace buyge_backend.db
                     .HasColumnType("mediumtext")
                     .HasColumnName("img_logo_link");
 
+                entity.Property(e => e.NmEmail)
+                    .HasMaxLength(100)
+                    .HasColumnName("nm_email");
+
                 entity.Property(e => e.NmLoja)
                     .HasMaxLength(100)
                     .HasColumnName("nm_loja");
@@ -324,6 +373,16 @@ namespace buyge_backend.db
                 entity.Property(e => e.NrCnpj)
                     .HasMaxLength(14)
                     .HasColumnName("nr_cnpj")
+                    .IsFixedLength();
+
+                entity.Property(e => e.NrTelefoneCelular)
+                    .HasMaxLength(11)
+                    .HasColumnName("nr_telefone_celular")
+                    .IsFixedLength();
+
+                entity.Property(e => e.NrTelefoneFixo)
+                    .HasMaxLength(10)
+                    .HasColumnName("nr_telefone_fixo")
                     .IsFixedLength();
 
                 entity.HasOne(d => d.FkCdClienteNavigation)
@@ -350,6 +409,8 @@ namespace buyge_backend.db
 
                 entity.Property(e => e.DsProduto).HasColumnName("ds_produto");
 
+                entity.Property(e => e.DtCriacao).HasColumnName("dt_criacao");
+
                 entity.Property(e => e.FkCdCategoria)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_categoria");
@@ -357,6 +418,10 @@ namespace buyge_backend.db
                 entity.Property(e => e.FkCdMercante)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_mercante");
+
+                entity.Property(e => e.IdDisponibilidade)
+                    .HasColumnType("bit(1)")
+                    .HasColumnName("id_disponibilidade");
 
                 entity.Property(e => e.NmProduto)
                     .HasMaxLength(40)
@@ -366,9 +431,21 @@ namespace buyge_backend.db
                     .HasColumnType("int(11)")
                     .HasColumnName("qt_produto");
 
+                entity.Property(e => e.VlFrete)
+                    .HasPrecision(6, 2)
+                    .HasColumnName("vl_frete");
+
+                entity.Property(e => e.VlPeso)
+                    .HasPrecision(6, 3)
+                    .HasColumnName("vl_peso");
+
                 entity.Property(e => e.VlProduto)
                     .HasPrecision(8, 2)
                     .HasColumnName("vl_produto");
+
+                entity.Property(e => e.VlTamanho)
+                    .HasColumnType("int(11)")
+                    .HasColumnName("vl_tamanho");
 
                 entity.HasOne(d => d.FkCdCategoriaNavigation)
                     .WithMany(p => p.TbProduto)
@@ -396,14 +473,16 @@ namespace buyge_backend.db
                     .HasColumnType("int(11)")
                     .HasColumnName("cd_produto_imagem");
 
-                entity.Property(e => e.DsImagemProduto).HasColumnName("ds_imagem_produto");
+                entity.Property(e => e.AltImagemProduto)
+                    .HasColumnType("tinytext")
+                    .HasColumnName("alt_imagem_produto");
 
                 entity.Property(e => e.FkCdProduto)
                     .HasColumnType("int(11)")
                     .HasColumnName("fk_cd_produto");
 
                 entity.Property(e => e.IdPrincipal)
-                    .HasColumnType("int(1)")
+                    .HasColumnType("bit(1)")
                     .HasColumnName("id_principal");
 
                 entity.Property(e => e.ImgProduto).HasColumnName("img_produto");

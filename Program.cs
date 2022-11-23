@@ -461,8 +461,12 @@ app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices]
 
     if (!String.IsNullOrEmpty(mercanteAlterado.NmLoja)) mercante.NmLoja = mercanteAlterado.NmLoja;
     if (!String.IsNullOrEmpty(mercanteAlterado.DsLoja)) mercante.DsLoja = mercanteAlterado.DsLoja;
+    if (!String.IsNullOrEmpty(mercanteAlterado.NmEmail)) mercante.NmEmail = mercanteAlterado.NmEmail;
     if (!String.IsNullOrEmpty(mercanteAlterado.ImgLogoLink)) mercante.ImgLogoLink = mercanteAlterado.ImgLogoLink;
+    if (mercanteAlterado.ImgLogo == null) mercante.ImgLogo = mercanteAlterado.ImgLogo;
     if (!String.IsNullOrEmpty(mercanteAlterado.NrCnpj)) mercante.NrCnpj = mercanteAlterado.NrCnpj;
+    if (!String.IsNullOrEmpty(mercanteAlterado.NrTelefoneFixo)) mercante.NrTelefoneFixo = mercanteAlterado.NrTelefoneFixo;
+    if (!String.IsNullOrEmpty(mercanteAlterado.NrTelefoneCelular)) mercante.NrTelefoneCelular = mercanteAlterado.NrTelefoneCelular;
 
     _db.SaveChanges();
 
@@ -486,6 +490,103 @@ app.MapDelete("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
     return Results.Ok();
 }).RequireAuthorization("Lojista");
 // FINAL MERCANTES
+
+// COMEÇO ENDEREÇOS MERCANTES
+app.MapGet("/api/mercante/enderecos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
+) =>
+{
+    var query = _db.TbEnderecoLoja.AsQueryable<TbEnderecoLoja>();
+    var enderecosLoja = query.ToList<TbEnderecoLoja>().Where(e => e.FkCdMercante == id);
+
+    if (enderecosLoja == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(enderecosLoja);
+}).RequireAuthorization();
+
+app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
+    [FromBody] TbEnderecoLoja novoEnderecoloJA
+) =>
+{
+    if (String.IsNullOrEmpty(novoEnderecoloJA.NmLogradouro))
+    {
+        return Results.BadRequest(new { mensagem = "Não é possivel incluir um endereço sem logradouro." });
+    }
+
+    var enderecoLoja = new TbEnderecoLoja
+    {
+        CdEndereco = 0,
+        NmLogradouro = novoEnderecoloJA.NmLogradouro,
+        NrEndereco = novoEnderecoloJA.NrEndereco,
+        NmBairro = novoEnderecoloJA.NmBairro,
+        NrCep = novoEnderecoloJA.NrCep,
+        NmCidade = novoEnderecoloJA.NmCidade,
+        SgEstado = novoEnderecoloJA.SgEstado,
+        FkCdMercante = novoEnderecoloJA.FkCdMercante
+    };
+
+    _db.TbEnderecoLoja.Add(enderecoLoja);
+    _db.SaveChanges();
+
+    var enderecoLojaUrl = $"/api/mercante/enderecos/{enderecoLoja.CdEndereco}";
+
+    return Results.Created(enderecoLojaUrl, enderecoLoja);
+}).RequireAuthorization();
+
+app.MapPut("/api/mercante/enderecos/{id}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int id,
+    [FromBody] TbEnderecoLoja enderecoLojaAlterado
+) =>
+{
+    if (enderecoLojaAlterado.CdEndereco != id)
+    {
+        return Results.BadRequest(new { mensagem = "Id inconsistente." });
+    }
+
+    if (String.IsNullOrEmpty(enderecoLojaAlterado.NmLogradouro))
+    {
+        return Results.BadRequest(new { mensagem = "Não é permitido deixar endereço sem logradouro." });
+    }
+
+    var enderecoLoja = _db.TbEnderecoLoja.Find(id);
+
+    if (enderecoLoja == null)
+    {
+        return Results.NotFound();
+    }
+
+    enderecoLoja.NmLogradouro = enderecoLojaAlterado.NmLogradouro;
+    enderecoLoja.NrEndereco = enderecoLojaAlterado.NrEndereco;
+    enderecoLoja.NmBairro = enderecoLojaAlterado.NmBairro;
+    enderecoLoja.NrCep = enderecoLojaAlterado.NrCep;
+    enderecoLoja.NmCidade = enderecoLojaAlterado.NmCidade;
+    enderecoLoja.SgEstado = enderecoLojaAlterado.SgEstado;
+    enderecoLoja.FkCdMercante = enderecoLojaAlterado.FkCdMercante;
+
+    _db.SaveChanges();
+
+    return Results.Ok(enderecoLoja);
+}).RequireAuthorization();
+
+app.MapDelete("/api/mercante/enderecos/{id}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int id
+) =>
+{
+    var enderecoLoja = _db.TbEnderecoLoja.Find(id);
+
+    if (enderecoLoja == null)
+    {
+        return Results.NotFound();
+    }
+
+    _db.TbEnderecoLoja.Remove(enderecoLoja);
+    _db.SaveChanges();
+
+    return Results.Ok();
+}).RequireAuthorization();
+// FINAL ENDEREÇOS LOJA
 
 // COMEÇO PRODUTOS
 app.MapGet("/api/produtos", ([FromServices] bdbuygeContext _db) =>
@@ -569,6 +670,10 @@ app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeC
     if (!String.IsNullOrEmpty(produtoAlterado.DsProduto)) produto.DsProduto = produtoAlterado.DsProduto;
     if (produtoAlterado.VlProduto > 0) produto.VlProduto = produtoAlterado.VlProduto;
     if (produtoAlterado.QtProduto > 0) produto.QtProduto = produtoAlterado.QtProduto;
+    if (produtoAlterado.VlPeso > 0) produto.VlPeso = produtoAlterado.VlPeso;
+    if (produtoAlterado.VlTamanho > 0) produto.VlTamanho = produtoAlterado.VlTamanho;
+    if (produtoAlterado.VlFrete > 0) produto.VlFrete = produtoAlterado.VlFrete;
+    produtoAlterado.IdDisponibilidade = produtoAlterado.IdDisponibilidade;
     if (produtoAlterado.FkCdCategoria > 0) produto.FkCdCategoria = produtoAlterado.FkCdCategoria;
 
     _db.SaveChanges();
@@ -637,7 +742,7 @@ app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     {
         ImgProdutoLink = null,
         ImgProduto = null,
-        DsImagemProduto = novaImagem.DsImagemProduto,
+        AltImagemProduto = novaImagem.AltImagemProduto,
         IdPrincipal = novaImagem.IdPrincipal,
         FkCdProduto = novaImagem.FkCdProduto
     };
@@ -685,7 +790,7 @@ app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromSer
     }
 
     if (!String.IsNullOrEmpty(produtoImagemAlterado.ImgProdutoLink)) produtoImagem.ImgProdutoLink = produtoImagemAlterado.ImgProdutoLink;
-    if (!String.IsNullOrEmpty(produtoImagemAlterado.DsImagemProduto)) produtoImagem.DsImagemProduto = produtoImagemAlterado.DsImagemProduto;
+    if (!String.IsNullOrEmpty(produtoImagemAlterado.AltImagemProduto)) produtoImagem.AltImagemProduto = produtoImagemAlterado.AltImagemProduto;
 
     _db.SaveChanges();
 

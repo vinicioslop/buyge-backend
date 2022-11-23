@@ -8,7 +8,6 @@ namespace buyge_backend.db
         public TbProduto()
         {
             TbItemCarrinho = new HashSet<TbItemCarrinho>();
-            TbItemCompra = new HashSet<TbItemCompra>();
             TbItemFavorito = new HashSet<TbItemFavorito>();
             TbProdutoImagem = new HashSet<TbProdutoImagem>();
         }
@@ -18,13 +17,17 @@ namespace buyge_backend.db
         public string DsProduto { get; set; } = null!;
         public decimal VlProduto { get; set; }
         public int QtProduto { get; set; }
+        public decimal? VlPeso { get; set; }
+        public int? VlTamanho { get; set; }
+        public decimal? VlFrete { get; set; }
+        public ulong IdDisponibilidade { get; set; }
+        public DateOnly DtCriacao { get; set; }
         public int FkCdMercante { get; set; }
         public int FkCdCategoria { get; set; }
 
         public virtual TbCategoria FkCdCategoriaNavigation { get; set; } = null!;
         public virtual TbMercante FkCdMercanteNavigation { get; set; } = null!;
         public virtual ICollection<TbItemCarrinho> TbItemCarrinho { get; set; }
-        public virtual ICollection<TbItemCompra> TbItemCompra { get; set; }
         public virtual ICollection<TbItemFavorito> TbItemFavorito { get; set; }
         public virtual ICollection<TbProdutoImagem> TbProdutoImagem { get; set; }
     }
