@@ -21,7 +21,7 @@ namespace buyge_backend.db
         public int? VlTamanho { get; set; }
         public decimal? VlFrete { get; set; }
         public ulong IdDisponibilidade { get; set; }
-        public DateOnly DtCriacao { get; set; }
+        public DateTime DtCriacao { get; set; }
         public int FkCdMercante { get; set; }
         public int FkCdCategoria { get; set; }
 

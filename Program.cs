@@ -674,6 +674,7 @@ app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeC
     if (produtoAlterado.VlTamanho > 0) produto.VlTamanho = produtoAlterado.VlTamanho;
     if (produtoAlterado.VlFrete > 0) produto.VlFrete = produtoAlterado.VlFrete;
     produtoAlterado.IdDisponibilidade = produtoAlterado.IdDisponibilidade;
+    produtoAlterado.DtCriacao = produtoAlterado.DtCriacao;
     if (produtoAlterado.FkCdCategoria > 0) produto.FkCdCategoria = produtoAlterado.FkCdCategoria;
 
     _db.SaveChanges();
