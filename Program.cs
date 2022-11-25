@@ -41,7 +41,7 @@ builder.Services.AddAuthentication(x =>
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy("Padrão", policy => policy.RequireRole("Padrão"));
-    options.AddPolicy("Lojista", policy => policy.RequireRole("Lojista"));
+    options.AddPolicy("Vendedor", policy => policy.RequireRole("Vendedor"));
 });
 
 var app = builder.Build();
@@ -100,7 +100,7 @@ app.MapGet("/api/clientes", ([FromServices] bdbuygeContext _db) =>
             clientes = clientes
         }
     );
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapGet("/api/clientes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
@@ -304,76 +304,6 @@ app.MapGet("/api/categorias/{id}", ([FromServices] bdbuygeContext _db, [FromRout
 
     return Results.Ok(categoria);
 }).AllowAnonymous();
-
-app.MapPost("/api/categorias", ([FromServices] bdbuygeContext _db,
-    [FromBody] TbCategoria novaCategoria
-) =>
-{
-    if (String.IsNullOrEmpty(novaCategoria.DsCategoria))
-    {
-        return Results.BadRequest(new { mensagem = "Não é possivel incluir uma categoria sem descrição." });
-    }
-
-    var categoria = new TbCategoria
-    {
-        NmCategoria = novaCategoria.NmCategoria,
-        DsCategoria = novaCategoria.DsCategoria,
-    };
-
-    _db.TbCategoria.Add(categoria);
-    _db.SaveChanges();
-
-    var categoriasURL = $"/api/categorias/{categoria.CdCategoria}";
-
-    return Results.Created(categoriasURL, categoria);
-}).RequireAuthorization();
-
-app.MapPut("/api/categorias/{id}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int id,
-    [FromBody] TbCategoria categoriaAlterada
-) =>
-{
-    if (categoriaAlterada.CdCategoria != id)
-    {
-        return Results.BadRequest(new { mensagem = "Id inconsistente." });
-    }
-
-    if (String.IsNullOrEmpty(categoriaAlterada.DsCategoria))
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido deixar uma tarefa sem título." });
-    }
-
-    var categoria = _db.TbCategoria.Find(id);
-
-    if (categoria == null)
-    {
-        return Results.NotFound();
-    }
-
-    categoria.NmCategoria = categoriaAlterada.NmCategoria;
-    categoria.DsCategoria = categoriaAlterada.DsCategoria;
-
-    _db.SaveChanges();
-
-    return Results.Ok(categoria);
-}).RequireAuthorization();
-
-app.MapDelete("/api/categorias/{id}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int id
-) =>
-{
-    var categoria = _db.TbCategoria.Find(id);
-
-    if (categoria == null)
-    {
-        return Results.NotFound();
-    }
-
-    _db.TbCategoria.Remove(categoria);
-    _db.SaveChanges();
-
-    return Results.Ok();
-}).RequireAuthorization();
 // FINAL CATEGORIAS
 
 // COMEÇO MERCANTES
@@ -396,7 +326,7 @@ app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute
     return Results.Ok(mercante);
 }).AllowAnonymous();
 
-app.MapGet("/api/mercantes/lojista/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
+app.MapGet("/api/mercantes/vendedor/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
 ) =>
 {
     var query = _db.TbMercante.AsQueryable<TbMercante>();
@@ -408,7 +338,7 @@ app.MapGet("/api/mercantes/lojista/{id}", ([FromServices] bdbuygeContext _db, [F
     }
 
     return Results.Ok(mercantes);
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
@@ -435,7 +365,7 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     var mercanteUrl = $"/api/mercantes/{mercante.CdMercante}";
 
     return Results.Created(mercanteUrl, mercante);
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int idMercante,
@@ -471,7 +401,7 @@ app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices]
     _db.SaveChanges();
 
     return Results.Ok(mercante);
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapDelete("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
@@ -488,7 +418,7 @@ app.MapDelete("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 // FINAL MERCANTES
 
 // COMEÇO ENDEREÇOS MERCANTES
@@ -647,7 +577,7 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     var produtoUrl = $"/api/produtos/{produto.CdProduto}";
 
     return Results.Created(produtoUrl, produto);
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
@@ -680,7 +610,7 @@ app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeC
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
@@ -697,7 +627,7 @@ app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 // FINAL PRODUTOS
 
 // COMEÇO IMAGENS PRODUTOS
@@ -771,7 +701,7 @@ app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
     var produtoImagemUrl = $"/api/produtos/produto-imagens/{produtoImagem.CdProdutoImagem}";
 
     return Results.Created(produtoImagemUrl, produtoImagem);
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
@@ -796,7 +726,7 @@ app.MapMethods("/api/produtos/produto-imagem/{id}", new[] { "PATCH" }, ([FromSer
     _db.SaveChanges();
 
     return Results.Ok(produtoImagem);
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 
 app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
@@ -813,7 +743,7 @@ app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContex
     _db.SaveChanges();
 
     return Results.Ok();
-}).RequireAuthorization("Lojista");
+}).RequireAuthorization();
 // FINAL IMAGENS PRODUTOS
 
 // COMEÇO ITEM CARRINHO
