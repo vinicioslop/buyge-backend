@@ -161,7 +161,7 @@ app.MapMethods("/api/clientes/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeC
     if (!String.IsNullOrEmpty(clienteAlterado.NmCliente)) cliente.NmCliente = clienteAlterado.NmCliente;
     if (!String.IsNullOrEmpty(clienteAlterado.NmSobrenome)) cliente.NmSobrenome = clienteAlterado.NmSobrenome;
     if (!String.IsNullOrEmpty(clienteAlterado.NrCpf)) cliente.NrCpf = clienteAlterado.NrCpf;
-    if (clienteAlterado.DtNascimento != null) cliente.DtNascimento = clienteAlterado.DtNascimento;
+    cliente.DtNascimento = clienteAlterado.DtNascimento;
     if (!String.IsNullOrEmpty(clienteAlterado.NrTelefone)) cliente.NrTelefone = clienteAlterado.NrTelefone;
     if (!String.IsNullOrEmpty(clienteAlterado.NmEmail)) cliente.NmEmail = clienteAlterado.NmEmail;
 
