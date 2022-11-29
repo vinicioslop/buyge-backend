@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-
-namespace buyge_backend.db
+﻿namespace buyge_backend.db
 {
     public partial class TbCompra
     {

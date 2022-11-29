@@ -1,10 +1,10 @@
-using System.Text;
 using buyge_backend;
 using buyge_backend.db;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -189,7 +189,19 @@ app.MapDelete("/api/clientes/{id}", ([FromServices] bdbuygeContext _db,
 // FINAL CLIENTES
 
 // COMEÇO ENDEREÇOS
-app.MapGet("/api/enderecos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
+app.MapGet("/api/enderecos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+{
+    var endereco = _db.TbEndereco.Find(id);
+
+    if (endereco == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(endereco);
+}).RequireAuthorization();
+
+app.MapGet("/api/enderecos/cliente/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
 ) =>
 {
     var query = _db.TbEndereco.AsQueryable<TbEndereco>();
@@ -232,7 +244,7 @@ app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
     return Results.Created(enderecoUrl, endereco);
 }).RequireAuthorization();
 
-app.MapPut("/api/enderecos/{id}", ([FromServices] bdbuygeContext _db,
+app.MapMethods("/api/enderecos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
     [FromBody] TbEndereco enderecoAlterado
 ) =>
@@ -242,11 +254,6 @@ app.MapPut("/api/enderecos/{id}", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Id inconsistente." });
     }
 
-    if (String.IsNullOrEmpty(enderecoAlterado.NmLogradouro))
-    {
-        return Results.BadRequest(new { mensagem = "Não é permitido deixar endereço sem logradouro." });
-    }
-
     var endereco = _db.TbEndereco.Find(id);
 
     if (endereco == null)
@@ -254,13 +261,17 @@ app.MapPut("/api/enderecos/{id}", ([FromServices] bdbuygeContext _db,
         return Results.NotFound();
     }
 
-    endereco.NmLogradouro = enderecoAlterado.NmLogradouro;
-    endereco.NrEndereco = enderecoAlterado.NrEndereco;
-    endereco.NmBairro = enderecoAlterado.NmBairro;
-    endereco.NrCep = enderecoAlterado.NrCep;
-    endereco.NmCidade = enderecoAlterado.NmCidade;
-    endereco.SgEstado = enderecoAlterado.SgEstado;
-    endereco.FkCdCliente = enderecoAlterado.FkCdCliente;
+    if (endereco.FkCdCliente != enderecoAlterado.FkCdCliente)
+    {
+        return Results.BadRequest(new { mensagem = "Id inconsistente." });
+    }
+
+    if (!String.IsNullOrEmpty(enderecoAlterado.NmLogradouro)) endereco.NmLogradouro = enderecoAlterado.NmLogradouro;
+    if (enderecoAlterado.NrEndereco > 0) endereco.NrEndereco = enderecoAlterado.NrEndereco;
+    if (!String.IsNullOrEmpty(enderecoAlterado.NmBairro)) endereco.NmBairro = enderecoAlterado.NmBairro;
+    if (!String.IsNullOrEmpty(enderecoAlterado.NrCep)) endereco.NrCep = enderecoAlterado.NrCep;
+    if (!String.IsNullOrEmpty(enderecoAlterado.NmCidade)) endereco.NmCidade = enderecoAlterado.NmCidade;
+    if (!String.IsNullOrEmpty(enderecoAlterado.SgEstado)) endereco.SgEstado = enderecoAlterado.SgEstado;
 
     _db.SaveChanges();
 
@@ -833,4 +844,8 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
     return Results.Ok();
 }).RequireAuthorization();
 // FINAL ITEM FAVORITO
+
+// COMPRA DE PRODUTOS
+
+// FINAL COMPRA DE PRODUTOS
 app.Run();
