@@ -1,4 +1,7 @@
-﻿namespace buyge_backend.db
+﻿using System;
+using System.Collections.Generic;
+
+namespace buyge_backend.db
 {
     public partial class TbMercante
     {

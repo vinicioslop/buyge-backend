@@ -1,10 +1,17 @@
 using buyge_backend;
 using buyge_backend.db;
+using MercadoPago.Client.Preference;
+using MercadoPago.Resource.Preference;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+
+using MercadoPago.Config;
+using Microsoft.AspNetCore.Http.Features;
+
+MercadoPagoConfig.AccessToken = "TEST-2863067349326898-112719-b6619df8821b7a6437236c816ff370f5-265323495";
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -90,18 +97,6 @@ app.MapGet("/api/token", ([FromServices] bdbuygeContext _db) =>
 }).RequireAuthorization();
 
 // COMEÇO CLIENTES
-app.MapGet("/api/clientes", ([FromServices] bdbuygeContext _db) =>
-{
-    var query = _db.TbCliente.AsQueryable<TbCliente>();
-    var clientes = query.ToList<TbCliente>();
-    return Results.Ok(
-        new
-        {
-            clientes = clientes
-        }
-    );
-}).RequireAuthorization();
-
 app.MapGet("/api/clientes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
 {
     var cliente = _db.TbCliente.Find(id);
@@ -110,6 +105,8 @@ app.MapGet("/api/clientes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute]
     {
         return Results.NotFound();
     }
+
+    cliente.NmSenha = "";
 
     return Results.Ok(cliente);
 }).RequireAuthorization();
@@ -233,6 +230,8 @@ app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
         NrCep = novoEndereco.NrCep,
         NmCidade = novoEndereco.NmCidade,
         SgEstado = novoEndereco.SgEstado,
+        NmTituloEndereco = novoEndereco.NmTituloEndereco,
+        NmTipoEndereco = novoEndereco.NmTipoEndereco,
         FkCdCliente = novoEndereco.FkCdCliente
     };
 
@@ -272,6 +271,37 @@ app.MapMethods("/api/enderecos/{id}", new[] { "PATCH" }, ([FromServices] bdbuyge
     if (!String.IsNullOrEmpty(enderecoAlterado.NrCep)) endereco.NrCep = enderecoAlterado.NrCep;
     if (!String.IsNullOrEmpty(enderecoAlterado.NmCidade)) endereco.NmCidade = enderecoAlterado.NmCidade;
     if (!String.IsNullOrEmpty(enderecoAlterado.SgEstado)) endereco.SgEstado = enderecoAlterado.SgEstado;
+    if (!String.IsNullOrEmpty(enderecoAlterado.NmTituloEndereco)) endereco.NmTituloEndereco = enderecoAlterado.NmTituloEndereco;
+    if (!String.IsNullOrEmpty(enderecoAlterado.NmTipoEndereco)) endereco.NmTipoEndereco = enderecoAlterado.NmTipoEndereco;
+
+    _db.SaveChanges();
+
+    return Results.Ok(endereco);
+}).RequireAuthorization();
+
+app.MapMethods("/api/enderecos/principal/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
+    [FromRoute] int id
+) =>
+{
+    var endereco = _db.TbEndereco.Find(id);
+
+    if (endereco == null)
+    {
+        return Results.NotFound();
+    }
+
+    endereco.IdPrincipal = 1;
+
+    var query = _db.TbEndereco.AsQueryable<TbEndereco>();
+    var enderecos = query.ToList<TbEndereco>().Where(e => e.FkCdCliente == endereco.FkCdCliente);
+
+    var listaEnderecos = enderecos.ToList<TbEndereco>();
+
+    listaEnderecos.ForEach((item) => {
+        if (item.CdEndereco != endereco.CdEndereco) {
+            item.IdPrincipal = 0;
+        }
+    });
 
     _db.SaveChanges();
 
@@ -846,6 +876,74 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
 // FINAL ITEM FAVORITO
 
 // COMPRA DE PRODUTOS
+app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente, [FromBody] List<TbItemCarrinho> itemsCarrinho
+) =>
+{
+    var cliente = _db.TbCliente.Find(idCliente);
 
+    if (cliente == null)
+    {
+        return Results.NotFound();
+    }
+
+    var Items = new List<PreferenceItemRequest> {};
+
+    var produtos = new List<TbProduto>();
+
+    itemsCarrinho.ForEach((item) =>
+    {
+        var produto = _db.TbProduto.Find(item.FkCdProduto);
+
+        if (produto != null)
+        {
+            produtos.Add(produto);
+        }
+    });
+
+    produtos.ForEach((produto) =>
+    {
+        PreferenceItemRequest item = new PreferenceItemRequest
+        {
+            Title = produto.NmProduto,
+            Quantity = 1,
+            Description = produto.DsProduto,
+            CurrencyId = "BRL",
+            UnitPrice = produto.VlProduto,
+        };
+
+        Items.Add(item);
+    });
+
+    PreferencePayerRequest Payer = new PreferencePayerRequest
+    {
+        Name = cliente.NmCliente,
+        Surname = cliente.NmSobrenome,
+        Email =  cliente.NmEmail,
+        Phone = {
+            AreaCode = "11",
+            Number = "4444-4444"
+        },
+        Identification = {
+            Type = "CPF",
+            Number = cliente.NrCpf
+        },
+        Address = {
+            StreetName = "Street",
+            StreetNumber = "123",
+            ZipCode = "06233200"
+        }
+    };
+
+    PreferenceRequest request = new PreferenceRequest {
+        Items = Items,
+        Payer = Payer
+    };
+
+    // Cria a preferência usando o client
+    var client = new PreferenceClient();
+    Preference preference = await client.CreateAsync(request);
+
+    return Results.Ok(preference);
+}).RequireAuthorization();
 // FINAL COMPRA DE PRODUTOS
 app.Run();
