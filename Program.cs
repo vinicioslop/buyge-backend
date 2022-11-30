@@ -297,8 +297,10 @@ app.MapMethods("/api/enderecos/principal/{id}", new[] { "PATCH" }, ([FromService
 
     var listaEnderecos = enderecos.ToList<TbEndereco>();
 
-    listaEnderecos.ForEach((item) => {
-        if (item.CdEndereco != endereco.CdEndereco) {
+    listaEnderecos.ForEach((item) =>
+    {
+        if (item.CdEndereco != endereco.CdEndereco)
+        {
             item.IdPrincipal = 0;
         }
     });
@@ -801,6 +803,7 @@ app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
 {
     var itemCarrinho = new TbItemCarrinho
     {
+        QtItemCarrinho = 1,
         FkCdProduto = idProduto,
         FkCdCliente = idCliente
     };
@@ -876,7 +879,7 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
 // FINAL ITEM FAVORITO
 
 // COMPRA DE PRODUTOS
-app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente, [FromBody] List<TbItemCarrinho> itemsCarrinho
+app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
 ) =>
 {
     var cliente = _db.TbCliente.Find(idCliente);
@@ -886,11 +889,13 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         return Results.NotFound();
     }
 
-    var Items = new List<PreferenceItemRequest> {};
+    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
+    var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
 
+    var listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
     var produtos = new List<TbProduto>();
 
-    itemsCarrinho.ForEach((item) =>
+    listaItemsCarrinho.ForEach((item) =>
     {
         var produto = _db.TbProduto.Find(item.FkCdProduto);
 
@@ -900,9 +905,11 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         }
     });
 
+    var Items = new List<PreferenceItemRequest> { };
+
     produtos.ForEach((produto) =>
     {
-        PreferenceItemRequest item = new PreferenceItemRequest
+        var item = new PreferenceItemRequest
         {
             Title = produto.NmProduto,
             Quantity = 1,
@@ -914,11 +921,11 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         Items.Add(item);
     });
 
-    PreferencePayerRequest Payer = new PreferencePayerRequest
+    var Payer = new PreferencePayerRequest
     {
         Name = cliente.NmCliente,
         Surname = cliente.NmSobrenome,
-        Email =  cliente.NmEmail,
+        Email = cliente.NmEmail,
         Phone = {
             AreaCode = "11",
             Number = "4444-4444"
@@ -934,7 +941,8 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         }
     };
 
-    PreferenceRequest request = new PreferenceRequest {
+    var request = new PreferenceRequest
+    {
         Items = Items,
         Payer = Payer
     };
