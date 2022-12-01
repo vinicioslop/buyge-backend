@@ -882,18 +882,18 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
 app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
 ) =>
 {
-    var cliente = _db.TbCliente.Find(idCliente);
+    /*var cliente = _db.TbCliente.Find(idCliente);
 
     if (cliente == null)
     {
         return Results.NotFound();
-    }
+    }*/
 
     var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
     var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
 
-    var listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
-    var produtos = new List<TbProduto>();
+    List<TbItemCarrinho> listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
+    List<TbProduto> produtos = new List<TbProduto>();
 
     listaItemsCarrinho.ForEach((item) =>
     {
@@ -905,7 +905,7 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         }
     });
 
-    var Items = new List<PreferenceItemRequest> { };
+    List<PreferenceItemRequest> Items = new List<PreferenceItemRequest> { };
 
     produtos.ForEach((produto) =>
     {
@@ -921,7 +921,7 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         Items.Add(item);
     });
 
-    var Payer = new PreferencePayerRequest
+    /*PreferencePayerRequest Payer = new PreferencePayerRequest
     {
         Name = cliente.NmCliente,
         Surname = cliente.NmSobrenome,
@@ -939,12 +939,12 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
             StreetNumber = "123",
             ZipCode = "06233200"
         }
-    };
+    };*/
 
-    var request = new PreferenceRequest
+    PreferenceRequest request = new PreferenceRequest
     {
-        Items = Items,
-        Payer = Payer
+        Items = Items
+        /* Payer = Payer */
     };
 
     // Cria a preferência usando o client
