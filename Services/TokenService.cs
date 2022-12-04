@@ -18,7 +18,7 @@ namespace buyge_backend
                     new Claim(ClaimTypes.Name, cliente.NmCliente),
                     new Claim(ClaimTypes.Role, cliente.NmTipoConta)
                 }),
-                Expires = DateTime.UtcNow.AddHours(1),
+                Expires = DateTime.UtcNow.AddHours(2),
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
 

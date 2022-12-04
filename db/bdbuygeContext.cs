@@ -30,7 +30,7 @@ namespace buyge_backend.db
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -116,6 +116,30 @@ namespace buyge_backend.db
                     .HasMaxLength(100)
                     .HasColumnName("id_preferencia");
 
+                entity.Property(e => e.NmCollectionId)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_collection_id");
+
+                entity.Property(e => e.NmCollectionStatus)
+                    .HasMaxLength(20)
+                    .HasColumnName("nm_collection_status");
+
+                entity.Property(e => e.NmMerchantOrderId)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_merchant_order_id");
+
+                entity.Property(e => e.NmPaymentId)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_payment_id");
+
+                entity.Property(e => e.NmPaymentType)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_payment_type");
+
+                entity.Property(e => e.NmStatus)
+                    .HasMaxLength(30)
+                    .HasColumnName("nm_status");
+
                 entity.Property(e => e.VlTotalCompra)
                     .HasPrecision(8, 2)
                     .HasColumnName("vl_total_compra");
@@ -150,8 +174,7 @@ namespace buyge_backend.db
 
                 entity.Property(e => e.IdPrincipal)
                     .HasColumnType("bit(1)")
-                    .HasColumnName("id_principal")
-                    .HasDefaultValueSql("b'0'");
+                    .HasColumnName("id_principal");
 
                 entity.Property(e => e.NmBairro)
                     .HasMaxLength(30)

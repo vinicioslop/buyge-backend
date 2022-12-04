@@ -5,7 +5,7 @@ services:
     container_name: buygebackend
     image: buygebackend/net6
     environment:
-    - PORT=8000
+      - PORT=8000
     ports:
       - 8000:8000
     build:

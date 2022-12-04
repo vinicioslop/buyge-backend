@@ -9,7 +9,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 using MercadoPago.Config;
-using Microsoft.AspNetCore.Http.Features;
+using System.Text.Json.Serialization;
 
 MercadoPagoConfig.AccessToken = "TEST-2863067349326898-112719-b6619df8821b7a6437236c816ff370f5-265323495";
 
@@ -50,6 +50,12 @@ builder.Services.AddAuthorization(options =>
     options.AddPolicy("Padrão", policy => policy.RequireRole("Padrão"));
     options.AddPolicy("Vendedor", policy => policy.RequireRole("Vendedor"));
 });
+
+builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =>
+{
+    options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
+});
+
 
 var app = builder.Build();
 
@@ -789,51 +795,6 @@ app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContex
 }).RequireAuthorization();
 // FINAL IMAGENS PRODUTOS
 
-// COMEÇO ITEM CARRINHO
-app.MapGet("/api/carrinho/items/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
-{
-    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
-    var items = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
-    return Results.Ok(items);
-}).RequireAuthorization();
-
-app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idCliente, [FromRoute] int idProduto
-) =>
-{
-    var itemCarrinho = new TbItemCarrinho
-    {
-        QtItemCarrinho = 1,
-        FkCdProduto = idProduto,
-        FkCdCliente = idCliente
-    };
-
-    _db.TbItemCarrinho.Add(itemCarrinho);
-    _db.SaveChanges();
-
-    var itemCarrinhoUrl = $"/api/carrinho/items/{itemCarrinho.FkCdCliente}";
-
-    return Results.Created(itemCarrinhoUrl, itemCarrinho);
-}).RequireAuthorization();
-
-app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idItemCarrinho
-) =>
-{
-    var itemCarrinho = _db.TbItemCarrinho.Find(idItemCarrinho);
-
-    if (itemCarrinho == null)
-    {
-        return Results.NotFound();
-    }
-
-    _db.TbItemCarrinho.Remove(itemCarrinho);
-    _db.SaveChanges();
-
-    return Results.Ok();
-}).RequireAuthorization();
-// FINAL ITEM CARRINHO
-
 // COMEÇO ITEM FAVORITO
 app.MapGet("/api/favorito/items/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
 {
@@ -878,7 +839,98 @@ app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeCon
 }).RequireAuthorization();
 // FINAL ITEM FAVORITO
 
+// COMEÇO ITEM CARRINHO
+app.MapGet("/api/carrinho/items/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
+{
+    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
+    var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
+
+    if (itemsCarrinho == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(itemsCarrinho);
+}).RequireAuthorization();
+
+app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idCliente, [FromRoute] int idProduto
+) =>
+{
+    var cliente = _db.TbCliente.Find(idCliente);
+
+    if (cliente == null)
+    {
+        return Results.NotFound();
+    }
+
+    var produto = _db.TbProduto.Find(idProduto);
+
+    if (produto == null)
+    {
+        return Results.NotFound();
+    }
+
+    var itemCarrinho = new TbItemCarrinho
+    {
+        QtItemCarrinho = 1,
+        FkCdProduto = produto.CdProduto,
+        FkCdCliente = cliente.CdCliente
+    };
+
+    _db.TbItemCarrinho.Add(itemCarrinho);
+    _db.SaveChanges();
+
+    var itemsCarrinhoUrl = $"/api/carrinho/items/{itemCarrinho.FkCdCliente}";
+
+    return Results.Created(itemsCarrinhoUrl, itemCarrinho);
+}).RequireAuthorization();
+
+app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idItemCarrinho
+) =>
+{
+    var itemCarrinho = _db.TbItemCarrinho.Find(idItemCarrinho);
+
+    if (itemCarrinho == null)
+    {
+        return Results.NotFound();
+    }
+
+    _db.TbItemCarrinho.Remove(itemCarrinho);
+    _db.SaveChanges();
+
+    return Results.Ok();
+}).RequireAuthorization();
+// FINAL ITEM CARRINHO
+
 // COMPRA DE PRODUTOS
+app.MapGet("/api/compras/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
+) =>
+{
+    var query = _db.TbCompra.AsQueryable<TbCompra>();
+    var compras = query.ToList<TbCompra>().Where(c => c.FkCdCliente == idCliente);
+
+    if (compras == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(compras);
+}).RequireAuthorization();
+
+app.MapGet("/api/compras/{idCompra}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCompra) =>
+{
+    var compra = _db.TbCompra.Find(idCompra);
+
+    if (compra == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(compra);
+}).RequireAuthorization();
+
 app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
 ) =>
 {
@@ -892,8 +944,8 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
     var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
     var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
 
-    List<TbItemCarrinho> listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
-    List<TbProduto> produtos = new List<TbProduto>();
+    var listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
+    var produtos = new List<TbProduto>();
 
     listaItemsCarrinho.ForEach((item) =>
     {
@@ -905,7 +957,7 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         }
     });
 
-    List<PreferenceItemRequest> Items = new List<PreferenceItemRequest> { };
+    var Items = new List<PreferenceItemRequest> { };
 
     produtos.ForEach((produto) =>
     {
@@ -921,7 +973,7 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         Items.Add(item);
     });
 
-    /*PreferencePayerRequest Payer = new PreferencePayerRequest
+    /*var Payer = new PreferencePayerRequest
     {
         Name = cliente.NmCliente,
         Surname = cliente.NmSobrenome,
@@ -941,10 +993,19 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
         }
     };*/
 
-    PreferenceRequest request = new PreferenceRequest
+    var BackUrls = new PreferenceBackUrlsRequest
     {
-        Items = Items
-        /* Payer = Payer */
+        Success = "http://127.0.0.1:5500/src/pages/compras/compra.html",
+        Failure = "http://127.0.0.1:5500/src/pages/compras/compra.html",
+        Pending = "http://127.0.0.1:5500/src/pages/compras/compra.html"
+    };
+
+    var request = new PreferenceRequest
+    {
+        Items = Items,
+        /*Payer = Payer,*/
+        BackUrls = BackUrls,
+        AutoReturn = "approved"
     };
 
     // Cria a preferência usando o client
@@ -952,6 +1013,64 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
     Preference preference = await client.CreateAsync(request);
 
     return Results.Ok(preference);
+}).RequireAuthorization();
+
+app.MapPost("/api/comprar/salvar/{idCliente}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idCliente, [FromBody] TbCompra novaCompra
+) =>
+{
+    var cliente = _db.TbCliente.Find(idCliente);
+
+    if (cliente == null)
+    {
+        return Results.NotFound();
+    }
+
+    var compra = new TbCompra
+    {
+        IdPreferencia = novaCompra.IdPreferencia,
+        NmStatus = novaCompra.NmStatus,
+        NmCollectionId = novaCompra.NmCollectionId,
+        NmMerchantOrderId = novaCompra.NmMerchantOrderId,
+        NmPaymentId = novaCompra.NmPaymentId,
+        NmPaymentType = novaCompra.NmPaymentType,
+        NmCollectionStatus = novaCompra.NmCollectionStatus,
+        FkCdCliente = cliente.CdCliente
+    };
+
+    _db.TbCompra.Add(compra);
+
+    _db.SaveChanges();
+
+    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
+    var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
+
+    var listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
+
+    listaItemsCarrinho.ForEach((item) =>
+    {
+        var produto = _db.TbProduto.Find(item.FkCdProduto);
+
+        if (produto != null)
+        {
+            var itemCompra = new TbItemCompra
+            {
+                NmProduto = produto.NmProduto,
+                DsProduto = produto.DsProduto,
+                VlItemCompra = produto.VlProduto,
+                QtItemCompra = item.QtItemCarrinho,
+                FkCdCompra = compra.CdCompra
+            };
+
+            _db.TbItemCompra.Add(itemCompra);
+        }
+    });
+
+    _db.SaveChanges();
+
+    var compraUrl = $"/api/compras/{compra.CdCompra}";
+
+    return Results.Created(compraUrl, compra);
 }).RequireAuthorization();
 // FINAL COMPRA DE PRODUTOS
 app.Run();

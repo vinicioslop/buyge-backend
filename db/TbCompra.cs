@@ -12,9 +12,15 @@ namespace buyge_backend.db
 
         public int CdCompra { get; set; }
         public decimal VlTotalCompra { get; set; }
-        public decimal VlTotalFrete { get; set; }
+        public decimal? VlTotalFrete { get; set; }
         public decimal? VlTotalDesconto { get; set; }
-        public string? IdPreferencia { get; set; }
+        public string IdPreferencia { get; set; } = null!;
+        public string NmCollectionStatus { get; set; } = null!;
+        public string NmCollectionId { get; set; } = null!;
+        public string NmPaymentId { get; set; } = null!;
+        public string NmStatus { get; set; } = null!;
+        public string NmPaymentType { get; set; } = null!;
+        public string NmMerchantOrderId { get; set; } = null!;
         public int FkCdCliente { get; set; }
 
         public virtual TbCliente FkCdClienteNavigation { get; set; } = null!;
