@@ -450,7 +450,7 @@ app.MapMethods("/api/mercantes/{idMercante}", new[] { "PATCH" }, ([FromServices]
     _db.SaveChanges();
 
     return Results.Ok(mercante);
-}).RequireAuthorization();
+}).AllowAnonymous();
 
 app.MapDelete("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
