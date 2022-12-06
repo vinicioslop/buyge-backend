@@ -10,6 +10,7 @@ using System.Text;
 
 using MercadoPago.Config;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 MercadoPagoConfig.AccessToken = "TEST-2863067349326898-112719-b6619df8821b7a6437236c816ff370f5-265323495";
 
@@ -227,6 +228,15 @@ app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Não é possivel incluir um endereço sem logradouro." });
     }
 
+    var query = _db.TbEndereco.AsQueryable<TbEndereco>();
+    var enderecos = query.ToList<TbEndereco>().Where(e => e.FkCdCliente == novoEndereco.FkCdCliente);
+    ulong idPrincipal = 0;
+
+    if (enderecos == null)
+    {
+        idPrincipal = 1;
+    }
+
     var endereco = new TbEndereco
     {
         CdEndereco = 0,
@@ -238,6 +248,7 @@ app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
         SgEstado = novoEndereco.SgEstado,
         NmTituloEndereco = novoEndereco.NmTituloEndereco,
         NmTipoEndereco = novoEndereco.NmTipoEndereco,
+        IdPrincipal = idPrincipal,
         FkCdCliente = novoEndereco.FkCdCliente
     };
 
@@ -796,17 +807,45 @@ app.MapDelete("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContex
 // FINAL IMAGENS PRODUTOS
 
 // COMEÇO ITEM FAVORITO
-app.MapGet("/api/favorito/items/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
+app.MapGet("/api/favorito/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente) =>
 {
     var query = _db.TbItemFavorito.AsQueryable<TbItemFavorito>();
     var items = query.ToList<TbItemFavorito>().Where(i => i.FkCdCliente == idCliente);
+
     return Results.Ok(items);
 }).RequireAuthorization();
 
-app.MapPost("/api/favorito/items/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/favorito/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idCliente, [FromRoute] int idProduto
 ) =>
 {
+    Boolean valido = true;
+
+    var produto = _db.TbProduto.Find(idProduto);
+
+    if (produto == null)
+    {
+        return Results.NotFound();
+    }
+
+    var query = _db.TbItemFavorito.AsQueryable<TbItemFavorito>();
+    var items = query.ToList<TbItemFavorito>().Where(i => i.FkCdCliente == idCliente);
+
+    var favoritos = items.ToList<TbItemFavorito>();
+
+    favoritos.ForEach((favorito) =>
+    {
+        if (favorito.FkCdProduto == idProduto)
+        {
+            valido = false;
+        }
+    });
+
+    if (!valido)
+    {
+        return Results.BadRequest(new { mensagem = "Produto já adicionado aos favoritos" });
+    }
+
     var itemFavorito = new TbItemFavorito
     {
         FkCdCliente = idCliente,
@@ -821,10 +860,37 @@ app.MapPost("/api/favorito/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
     return Results.Created(itemFavoritoUrl, itemFavorito);
 }).RequireAuthorization();
 
-app.MapDelete("/api/favorito/items/{idItemFavorito}", ([FromServices] bdbuygeContext _db,
-    [FromRoute] int idItemFavorito
+app.MapDelete("/api/favorito/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idCliente, [FromRoute] int idProduto
 ) =>
 {
+    int idItemFavorito = -1;
+
+    var produto = _db.TbProduto.Find(idProduto);
+
+    if (produto == null)
+    {
+        return Results.NotFound();
+    }
+
+    var query = _db.TbItemFavorito.AsQueryable<TbItemFavorito>();
+    var items = query.ToList<TbItemFavorito>().Where(i => i.FkCdCliente == idCliente);
+
+    var favoritos = items.ToList<TbItemFavorito>();
+
+    favoritos.ForEach((favorito) =>
+    {
+        if (favorito.FkCdProduto == produto.CdProduto)
+        {
+            idItemFavorito = favorito.CdItemFavorito;
+        }
+    });
+
+    if (idItemFavorito == -1)
+    {
+        return Results.NotFound();
+    }
+
     var itemFavorito = _db.TbItemFavorito.Find(idItemFavorito);
 
     if (itemFavorito == null)
@@ -884,6 +950,30 @@ app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
     var itemsCarrinhoUrl = $"/api/carrinho/items/{itemCarrinho.FkCdCliente}";
 
     return Results.Created(itemsCarrinhoUrl, itemCarrinho);
+}).RequireAuthorization();
+
+app.MapMethods("/api/carrinho/items/{idItemCarrinho}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idItemCarrinho,
+    [FromBody] TbItemCarrinho itemCarrinhoAlterado
+) =>
+{
+    if (itemCarrinhoAlterado.CdItemCarrinho != idItemCarrinho)
+    {
+        return Results.BadRequest(new { mensagem = "Id inconsistente." });
+    }
+
+    var itemCarrinho = _db.TbItemCarrinho.Find(idItemCarrinho);
+
+    if (itemCarrinho == null)
+    {
+        return Results.NotFound();
+    }
+
+    if (itemCarrinhoAlterado.QtItemCarrinho > 0) itemCarrinho.QtItemCarrinho = itemCarrinhoAlterado.QtItemCarrinho;
+
+    _db.SaveChanges();
+
+    return Results.Ok(itemCarrinho);
 }).RequireAuthorization();
 
 app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeContext _db,
