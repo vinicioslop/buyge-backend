@@ -10,7 +10,6 @@ using System.Text;
 
 using MercadoPago.Config;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 
 MercadoPagoConfig.AccessToken = "TEST-2863067349326898-112719-b6619df8821b7a6437236c816ff370f5-265323495";
 
@@ -56,7 +55,6 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 {
     options.SerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles;
 });
-
 
 var app = builder.Build();
 
