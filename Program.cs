@@ -610,37 +610,25 @@ app.MapGet("/api/produtos/mercante/{idMercante}", ([FromServices] bdbuygeContext
 }).AllowAnonymous();
 
 app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
-    [FromBody] ProdutoComImagem novoProdutoComImagem
+    [FromBody] TbProduto novoProduto
 ) =>
 {
-    if (String.IsNullOrEmpty(novoProdutoComImagem.produto.NmProduto))
+    if (String.IsNullOrEmpty(novoProduto.NmProduto))
     {
         return Results.BadRequest(new { mensagem = "Não é possivel incluir um produto sem nome." });
     }
 
     var produto = new TbProduto
     {
-        NmProduto = novoProdutoComImagem.produto.NmProduto,
-        DsProduto = novoProdutoComImagem.produto.DsProduto,
-        VlProduto = novoProdutoComImagem.produto.VlProduto,
-        QtProduto = novoProdutoComImagem.produto.QtProduto,
-        FkCdMercante = novoProdutoComImagem.produto.FkCdMercante,
-        FkCdCategoria = novoProdutoComImagem.produto.FkCdCategoria
+        NmProduto = novoProduto.NmProduto,
+        DsProduto = novoProduto.DsProduto,
+        VlProduto = novoProduto.VlProduto,
+        QtProduto = novoProduto.QtProduto,
+        FkCdMercante = novoProduto.FkCdMercante,
+        FkCdCategoria = novoProduto.FkCdCategoria
     };
 
     _db.TbProduto.Add(produto);
-
-    if (novoProdutoComImagem.imagem.ImgProduto == null && String.IsNullOrEmpty(novoProdutoComImagem.imagem.ImgProdutoLink))
-    {
-        return Results.BadRequest(new { mensagem = "Não é possivel incluir uma imagem sem pelo menos uma url ou arquivo." });
-    }
-
-    var imagem = new TbProdutoImagem
-    {
-        AltImagemProduto = novoProdutoComImagem.imagem.AltImagemProduto
-    };
-
-    _db.TbProdutoImagem.Add(novoProdutoComImagem.imagem);
 
     _db.SaveChanges();
 
