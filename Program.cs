@@ -374,9 +374,9 @@ app.MapGet("/api/mercantes", ([FromServices] bdbuygeContext _db) =>
     return Results.Ok(mercantes);
 }).AllowAnonymous();
 
-app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+app.MapGet("/api/mercantes/{idMercante}", ([FromServices] bdbuygeContext _db, [FromRoute] int idMercante) =>
 {
-    var mercante = _db.TbMercante.Find(id);
+    var mercante = _db.TbMercante.Find(idMercante);
 
     if (mercante == null)
     {
@@ -386,11 +386,11 @@ app.MapGet("/api/mercantes/{id}", ([FromServices] bdbuygeContext _db, [FromRoute
     return Results.Ok(mercante);
 }).AllowAnonymous();
 
-app.MapGet("/api/mercantes/vendedor/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id
+app.MapGet("/api/mercantes/vendedor/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
 ) =>
 {
     var query = _db.TbMercante.AsQueryable<TbMercante>();
-    var mercantes = query.ToList<TbMercante>().Where(m => m.FkCdCliente == id);
+    var mercantes = query.ToList<TbMercante>().Where(m => m.FkCdCliente == idCliente);
 
     if (mercantes == null)
     {
@@ -586,9 +586,9 @@ app.MapGet("/api/produtos", ([FromServices] bdbuygeContext _db) =>
     return Results.Ok(produtos);
 }).AllowAnonymous();
 
-app.MapGet("/api/produtos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+app.MapGet("/api/produtos/{idProduto}", ([FromServices] bdbuygeContext _db, [FromRoute] int idProduto) =>
 {
-    var produto = _db.TbProduto.Find(id);
+    var produto = _db.TbProduto.Find(idProduto);
 
     if (produto == null)
     {
@@ -598,10 +598,10 @@ app.MapGet("/api/produtos/{id}", ([FromServices] bdbuygeContext _db, [FromRoute]
     return Results.Ok(produto);
 }).AllowAnonymous();
 
-app.MapGet("/api/produtos/mercante/{id}", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+app.MapGet("/api/produtos/mercante/{idMercante}", ([FromServices] bdbuygeContext _db, [FromRoute] int idMercante) =>
 {
     var query = _db.TbProduto.AsQueryable<TbProduto>();
-    var produtos = query.ToList<TbProduto>().Where(p => p.FkCdMercante == id);
+    var produtos = query.ToList<TbProduto>().Where(p => p.FkCdMercante == idMercante);
 
     if (produtos == null)
     {
@@ -639,17 +639,17 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
     return Results.Created(produtoUrl, produto);
 }).RequireAuthorization();
 
-app.MapMethods("/api/produtos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
-    [FromRoute] int id,
+app.MapMethods("/api/produtos/{idProduto}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
+    [FromRoute] int idProduto,
     [FromBody] TbProduto produtoAlterado
 ) =>
 {
-    if (produtoAlterado.CdProduto != id)
+    if (produtoAlterado.CdProduto != idProduto)
     {
         return Results.BadRequest(new { mensagem = "Id inconsistente." });
     }
 
-    var produto = _db.TbProduto.Find(id);
+    var produto = _db.TbProduto.Find(idProduto);
 
     if (produto == null)
     {
@@ -710,10 +710,10 @@ app.MapGet("/api/produtos/produto-imagem/{id}", ([FromServices] bdbuygeContext _
     return Results.Ok(imagem);
 }).AllowAnonymous();
 
-app.MapGet("/api/produtos/produto-imagem/{id}/todas", ([FromServices] bdbuygeContext _db, [FromRoute] int id) =>
+app.MapGet("/api/produtos/produto-imagem/{idProduto}/todas", ([FromServices] bdbuygeContext _db, [FromRoute] int idProduto) =>
 {
     var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
-    var produtoImagens = query.ToList<TbProdutoImagem>().Where(pi => pi.FkCdProduto == id);
+    var produtoImagens = query.ToList<TbProdutoImagem>().Where(pi => pi.FkCdProduto == idProduto);
 
     if (produtoImagens == null)
     {
