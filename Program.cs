@@ -921,6 +921,8 @@ app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
     [FromRoute] int idCliente, [FromRoute] int idProduto
 ) =>
 {
+    Boolean valido = true;
+
     var cliente = _db.TbCliente.Find(idCliente);
 
     if (cliente == null)
@@ -933,6 +935,24 @@ app.MapPost("/api/carrinho/items/{idCliente}/{idProduto}", ([FromServices] bdbuy
     if (produto == null)
     {
         return Results.NotFound();
+    }
+
+    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
+    var items = query.ToList<TbItemCarrinho>().Where(ic => ic.FkCdCliente == idCliente);
+
+    var itemsCarrinho = items.ToList<TbItemCarrinho>();
+
+    itemsCarrinho.ForEach((item) =>
+    {
+        if (item.FkCdProduto == idProduto)
+        {
+            valido = false;
+        }
+    });
+
+    if (!valido)
+    {
+        return Results.BadRequest(new { mensagem = "Produto já adicionado no carrinho." });
     }
 
     var itemCarrinho = new TbItemCarrinho
