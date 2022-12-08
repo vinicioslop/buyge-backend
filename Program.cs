@@ -523,7 +523,7 @@ app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
     return Results.Created(enderecoLojaUrl, enderecoLoja);
 }).RequireAuthorization();
 
-app.MapPut("/api/mercante/enderecos/{id}", ([FromServices] bdbuygeContext _db,
+app.MapMethods("/api/mercante/enderecos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
     [FromBody] TbEnderecoLoja enderecoLojaAlterado
 ) =>
@@ -545,13 +545,12 @@ app.MapPut("/api/mercante/enderecos/{id}", ([FromServices] bdbuygeContext _db,
         return Results.NotFound();
     }
 
-    enderecoLoja.NmLogradouro = enderecoLojaAlterado.NmLogradouro;
-    enderecoLoja.NrEndereco = enderecoLojaAlterado.NrEndereco;
-    enderecoLoja.NmBairro = enderecoLojaAlterado.NmBairro;
-    enderecoLoja.NrCep = enderecoLojaAlterado.NrCep;
-    enderecoLoja.NmCidade = enderecoLojaAlterado.NmCidade;
-    enderecoLoja.SgEstado = enderecoLojaAlterado.SgEstado;
-    enderecoLoja.FkCdMercante = enderecoLojaAlterado.FkCdMercante;
+    if (!String.IsNullOrEmpty(enderecoLojaAlterado.NmLogradouro)) enderecoLoja.NmLogradouro = enderecoLojaAlterado.NmLogradouro;
+    if (enderecoLojaAlterado.NrEndereco > 0) enderecoLoja.NrEndereco = enderecoLojaAlterado.NrEndereco;
+    if (!String.IsNullOrEmpty(enderecoLojaAlterado.NmBairro)) enderecoLoja.NmBairro = enderecoLojaAlterado.NmBairro;
+    if (!String.IsNullOrEmpty(enderecoLojaAlterado.NrCep)) enderecoLoja.NrCep = enderecoLojaAlterado.NrCep;
+    if (!String.IsNullOrEmpty(enderecoLojaAlterado.NmCidade)) enderecoLoja.NmCidade = enderecoLojaAlterado.NmCidade;
+    if (!String.IsNullOrEmpty(enderecoLojaAlterado.SgEstado)) enderecoLoja.SgEstado = enderecoLojaAlterado.SgEstado;
 
     _db.SaveChanges();
 
