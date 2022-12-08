@@ -58,7 +58,6 @@ builder.Services.Configure<Microsoft.AspNetCore.Http.Json.JsonOptions>(options =
 
 var app = builder.Build();
 
-app.UseHttpsRedirection();
 app.UseSwagger();
 app.UseSwaggerUI();
 
