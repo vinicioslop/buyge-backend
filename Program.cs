@@ -1189,4 +1189,19 @@ app.MapPost("/api/comprar/salvar/{idCliente}", ([FromServices] bdbuygeContext _d
     return Results.Created(compraUrl, compra);
 }).RequireAuthorization();
 // FINAL COMPRA DE PRODUTOS
+
+// ITEMS DE COMPRA
+app.MapGet("/api/compras/items/{idCompra}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCompra) =>
+{
+    var query = _db.TbItemCompra.AsQueryable<TbItemCompra>();
+    var itemsCompra = query.ToList<TbItemCompra>().Where(ic => ic.FkCdCompra == idCompra);
+
+    if (itemsCompra == null)
+    {
+        return Results.NotFound();
+    }
+
+    return Results.Ok(itemsCompra);
+}).RequireAuthorization();
+// FINAL ITEMS DE COMPRA
 app.Run();
