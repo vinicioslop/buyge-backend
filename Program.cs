@@ -495,10 +495,10 @@ app.MapGet("/api/mercante/enderecos/{id}", ([FromServices] bdbuygeContext _db, [
 }).RequireAuthorization();
 
 app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
-    [FromBody] TbEnderecoLoja novoEnderecoloJA
+    [FromBody] TbEnderecoLoja novoEnderecoLoja
 ) =>
 {
-    if (String.IsNullOrEmpty(novoEnderecoloJA.NmLogradouro))
+    if (String.IsNullOrEmpty(novoEnderecoLoja.NmLogradouro))
     {
         return Results.BadRequest(new { mensagem = "Não é possivel incluir um endereço sem logradouro." });
     }
@@ -506,13 +506,13 @@ app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
     var enderecoLoja = new TbEnderecoLoja
     {
         CdEndereco = 0,
-        NmLogradouro = novoEnderecoloJA.NmLogradouro,
-        NrEndereco = novoEnderecoloJA.NrEndereco,
-        NmBairro = novoEnderecoloJA.NmBairro,
-        NrCep = novoEnderecoloJA.NrCep,
-        NmCidade = novoEnderecoloJA.NmCidade,
-        SgEstado = novoEnderecoloJA.SgEstado,
-        FkCdMercante = novoEnderecoloJA.FkCdMercante
+        NmLogradouro = novoEnderecoLoja.NmLogradouro,
+        NrEndereco = novoEnderecoLoja.NrEndereco,
+        NmBairro = novoEnderecoLoja.NmBairro,
+        NrCep = novoEnderecoLoja.NrCep,
+        NmCidade = novoEnderecoLoja.NmCidade,
+        SgEstado = novoEnderecoLoja.SgEstado,
+        FkCdMercante = novoEnderecoLoja.FkCdMercante
     };
 
     _db.TbEnderecoLoja.Add(enderecoLoja);
@@ -521,7 +521,7 @@ app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
     var enderecoLojaUrl = $"/api/mercante/enderecos/{enderecoLoja.CdEndereco}";
 
     return Results.Created(enderecoLojaUrl, enderecoLoja);
-}).RequireAuthorization();
+}).AllowAnonymous();
 
 app.MapMethods("/api/mercante/enderecos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int id,
