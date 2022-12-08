@@ -1,0 +1,14 @@
+[Unit]
+Description=Dotnet Core Demo service
+  
+[Service]  
+ExecStart=/home/ubuntu/buyge-backend/bin/Release/net6.0/linux-x64/dotnet buyge-backend.dll
+WorkingDirectory=/usr/local/services
+User=dotnetuser  
+Group=dotnetuser  
+Restart=on-failure  
+SyslogIdentifier=dotnet-buyge-backend
+PrivateTmp=true  
+  
+[Install]  
+WantedBy=multi-user.target  
