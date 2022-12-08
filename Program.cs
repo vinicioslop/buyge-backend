@@ -503,9 +503,18 @@ app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Não é possivel incluir um endereço sem logradouro." });
     }
 
-    var enderecoLoja = new TbEnderecoLoja
+    var query = _db.TbEnderecoLoja.AsQueryable<TbEnderecoLoja>();
+    var enderecos = query.ToList<TbEnderecoLoja>().Where(ej => ej.FkCdMercante == novoEnderecoLoja.FkCdMercante);
+
+    var listaEnderecos = enderecos.ToList<TbEnderecoLoja>();
+
+    if (listaEnderecos.Count > 0)
     {
-        CdEndereco = 0,
+        return Results.BadRequest(new { mensagem = "Loja já possui endereço cadastrado" });
+    }
+
+    var endereco = new TbEnderecoLoja
+    {
         NmLogradouro = novoEnderecoLoja.NmLogradouro,
         NrEndereco = novoEnderecoLoja.NrEndereco,
         NmBairro = novoEnderecoLoja.NmBairro,
@@ -515,12 +524,12 @@ app.MapPost("/api/mercante/enderecos", ([FromServices] bdbuygeContext _db,
         FkCdMercante = novoEnderecoLoja.FkCdMercante
     };
 
-    _db.TbEnderecoLoja.Add(enderecoLoja);
+    _db.TbEnderecoLoja.Add(endereco);
     _db.SaveChanges();
 
-    var enderecoLojaUrl = $"/api/mercante/enderecos/{enderecoLoja.CdEndereco}";
+    var enderecoUrl = $"/api/mercante/enderecos/{endereco.CdEndereco}";
 
-    return Results.Created(enderecoLojaUrl, enderecoLoja);
+    return Results.Created(enderecoUrl, endereco);
 }).AllowAnonymous();
 
 app.MapMethods("/api/mercante/enderecos/{id}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
