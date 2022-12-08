@@ -1137,31 +1137,14 @@ app.MapPost("/api/comprar/salvar/{idCliente}", ([FromServices] bdbuygeContext _d
 ) =>
 {
     var cliente = _db.TbCliente.Find(idCliente);
-    Decimal valorTotal = 0;
 
     if (cliente == null)
     {
         return Results.NotFound();
     }
 
-    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
-    var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
-
-    var listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
-
-    listaItemsCarrinho.ForEach((item) =>
-    {
-        var produto = _db.TbProduto.Find(item.FkCdProduto);
-
-        if (produto != null)
-        {
-            valorTotal = valorTotal + (produto.VlProduto * item.QtItemCarrinho);
-        }
-    });
-
     var compra = new TbCompra
     {
-        VlTotalCompra = valorTotal,
         IdPreferencia = novaCompra.IdPreferencia,
         NmStatus = novaCompra.NmStatus,
         NmCollectionId = novaCompra.NmCollectionId,
@@ -1173,6 +1156,13 @@ app.MapPost("/api/comprar/salvar/{idCliente}", ([FromServices] bdbuygeContext _d
     };
 
     _db.TbCompra.Add(compra);
+
+    _db.SaveChanges();
+
+    var query = _db.TbItemCarrinho.AsQueryable<TbItemCarrinho>();
+    var itemsCarrinho = query.ToList<TbItemCarrinho>().Where(i => i.FkCdCliente == idCliente);
+
+    var listaItemsCarrinho = itemsCarrinho.ToList<TbItemCarrinho>();
 
     listaItemsCarrinho.ForEach((item) =>
     {
@@ -1194,6 +1184,29 @@ app.MapPost("/api/comprar/salvar/{idCliente}", ([FromServices] bdbuygeContext _d
             _db.TbItemCarrinho.Remove(item);
         }
     });
+
+    _db.SaveChanges();
+
+    var pesquisa = _db.TbItemCompra.AsQueryable<TbItemCompra>();
+    var itemsCompra = pesquisa.ToList<TbItemCompra>().Where(ic => ic.FkCdCompra == compra.CdCompra);
+
+    var listaItemsCompra = itemsCompra.ToList<TbItemCompra>();
+
+    Decimal valorTotal = 0;
+
+    listaItemsCompra.ForEach((item) =>
+    {
+        valorTotal += item.VlItemCompra * item.QtItemCompra;
+    });
+
+    var compraAtual = _db.TbCompra.Find(compra.CdCompra);
+
+    if (compraAtual == null)
+    {
+        return Results.NotFound();
+    }
+
+    compraAtual.VlTotalCompra = valorTotal;
 
     _db.SaveChanges();
 
