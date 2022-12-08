@@ -1179,7 +1179,11 @@ app.MapPost("/api/comprar/salvar/{idCliente}", ([FromServices] bdbuygeContext _d
                 FkCdCompra = compra.CdCompra
             };
 
+            compra.VlTotalCompra += itemCompra.VlItemCompra * item.QtItemCarrinho;
+
             _db.TbItemCompra.Add(itemCompra);
+
+            _db.TbItemCarrinho.Remove(item);
         }
     });
 
