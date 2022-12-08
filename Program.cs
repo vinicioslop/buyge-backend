@@ -65,8 +65,8 @@ app.UseSwaggerUI();
 app.UseCors(x => x
     .AllowAnyMethod()
     .AllowAnyHeader()
-    .SetIsOriginAllowed(origin => true)
     .AllowAnyOrigin()
+    //.SetIsOriginAllowed(origin => true)
 );
 
 app.UseAuthentication();
