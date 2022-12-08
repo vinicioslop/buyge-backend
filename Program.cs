@@ -1022,7 +1022,7 @@ app.MapDelete("/api/carrinho/items/{idItemCarrinho}", ([FromServices] bdbuygeCon
 // FINAL ITEM CARRINHO
 
 // COMPRA DE PRODUTOS
-app.MapGet("/api/compras/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
+app.MapGet("/api/compras/todas/{idCliente}", ([FromServices] bdbuygeContext _db, [FromRoute] int idCliente
 ) =>
 {
     var query = _db.TbCompra.AsQueryable<TbCompra>();
