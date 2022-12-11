@@ -632,6 +632,7 @@ app.MapPost("/api/produtos", ([FromServices] bdbuygeContext _db,
         DsProduto = novoProduto.DsProduto,
         VlProduto = novoProduto.VlProduto,
         QtProduto = novoProduto.QtProduto,
+        DtCriacao = DateTime.Now,
         FkCdMercante = novoProduto.FkCdMercante,
         FkCdCategoria = novoProduto.FkCdCategoria
     };
