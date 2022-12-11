@@ -191,7 +191,7 @@ app.MapDelete("/api/clientes/{idCliente}", ([FromServices] bdbuygeContext _db,
 // FINAL CLIENTES
 
 // COMEÇO SENHA
-app.MapPost("/api/clientes/senha/trocar/${idCliente}", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/clientes/senha/trocar/{idCliente}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idCliente, [FromBody] TrocaSenha novaSenha
 ) =>
 {
@@ -207,7 +207,12 @@ app.MapPost("/api/clientes/senha/trocar/${idCliente}", ([FromServices] bdbuygeCo
         return Results.NotFound();
     }
 
-    cliente.NmSenha = novaSenha.novaSenha;
+    if (cliente.NmSenha == novaSenha.senhaAtual)
+    {
+        cliente.NmSenha = novaSenha.novaSenha;
+    } else {
+        return Results.BadRequest(new { mensagem = "Senha informada é diferente da atual." });
+    }
 
     _db.SaveChanges();
 
