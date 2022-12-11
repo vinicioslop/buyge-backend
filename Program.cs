@@ -676,7 +676,7 @@ app.MapMethods("/api/produtos/{idProduto}", new[] { "PATCH" }, ([FromServices] b
     _db.SaveChanges();
 
     return Results.Ok();
-}).AllowAnonymous();
+}).RequireAuthorization();
 
 app.MapDelete("/api/produtos/{id}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int id
