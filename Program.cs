@@ -128,6 +128,7 @@ app.MapPost("/api/cliente", ([FromServices] bdbuygeContext _db,
     var cliente = new TbCliente
     {
         NmCliente = novoCliente.NmCliente,
+        NmSobrenome = novoCliente.NmSobrenome,
         DtNascimento = novoCliente.DtNascimento,
         NmEmail = novoCliente.NmEmail,
         NmSenha = novoCliente.NmSenha,
@@ -473,7 +474,7 @@ app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     var mercanteUrl = $"/api/mercantes/{mercante.CdMercante}";
 
     return Results.Created(mercanteUrl, mercante);
-}).AllowAnonymous();
+}).RequireAuthorization();
 
 app.MapMethods("/api/mercante/atualizar/{idMercante}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int idMercante,
