@@ -116,7 +116,7 @@ app.MapGet("/api/cliente/{idCliente}", ([FromServices] bdbuygeContext _db, [From
     return Results.Ok(cliente);
 }).RequireAuthorization();
 
-app.MapPost("/api/clientes/novo", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/cliente/novo", ([FromServices] bdbuygeContext _db,
     [FromBody] TbCliente novoCliente
 ) =>
 {
