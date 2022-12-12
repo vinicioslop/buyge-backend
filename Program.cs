@@ -473,7 +473,7 @@ app.MapPost("/api/mercantes/novo", ([FromServices] bdbuygeContext _db,
     var mercanteUrl = $"/api/mercantes/{mercante.CdMercante}";
 
     return Results.Created(mercanteUrl, mercante);
-}).RequireAuthorization();
+}).AllowAnonymous();
 
 app.MapMethods("/api/mercante/atualizar/{idMercante}", new[] { "PATCH" }, ([FromServices] bdbuygeContext _db,
     [FromRoute] int idMercante,
