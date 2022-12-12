@@ -210,7 +210,9 @@ app.MapPost("/api/clientes/senha/trocar/{idCliente}", ([FromServices] bdbuygeCon
     if (cliente.NmSenha == novaSenha.senhaAtual)
     {
         cliente.NmSenha = novaSenha.novaSenha;
-    } else {
+    }
+    else
+    {
         return Results.BadRequest(new { mensagem = "Senha informada é diferente da atual." });
     }
 
@@ -260,15 +262,6 @@ app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
         return Results.BadRequest(new { mensagem = "Não é possivel incluir um endereço sem logradouro." });
     }
 
-    var query = _db.TbEndereco.AsQueryable<TbEndereco>();
-    var enderecos = query.ToList<TbEndereco>().Where(e => e.FkCdCliente == novoEndereco.FkCdCliente);
-    ulong idPrincipal = 0;
-
-    if (enderecos == null)
-    {
-        idPrincipal = 1;
-    }
-
     var endereco = new TbEndereco
     {
         CdEndereco = 0,
@@ -280,7 +273,7 @@ app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
         SgEstado = novoEndereco.SgEstado,
         NmTituloEndereco = novoEndereco.NmTituloEndereco,
         NmTipoEndereco = novoEndereco.NmTipoEndereco,
-        IdPrincipal = idPrincipal,
+        IdPrincipal = novoEndereco.IdPrincipal,
         FkCdCliente = novoEndereco.FkCdCliente
     };
 
