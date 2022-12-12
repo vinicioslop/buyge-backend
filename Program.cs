@@ -425,6 +425,29 @@ app.MapGet("/api/mercantes/vendedor/{idCliente}", ([FromServices] bdbuygeContext
     return Results.Ok(mercantes);
 }).RequireAuthorization();
 
+app.MapGet("/api/mercantes/preference_id/{preferenceId}", ([FromServices] bdbuygeContext _db, [FromRoute] string preferenceId
+) =>
+{
+    var query = _db.TbCompra.AsQueryable<TbCompra>();
+    var compras = query.ToList<TbCompra>().Where(c => c.IdPreferencia == preferenceId);
+
+    if (compras == null)
+    {
+        return Results.NotFound();
+    }
+
+    var compra = compras.FirstOrDefault<TbCompra>();
+
+    if (compra == null)
+    {
+        return Results.NotFound(new { mensagem = "Código de preferência inválido." });
+    }
+
+    var mercante = _db.TbMercante.Find(compra.IdPreferencia);
+
+    return Results.Ok(mercante);
+}).RequireAuthorization();
+
 app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
 ) =>
