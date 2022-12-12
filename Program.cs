@@ -116,7 +116,7 @@ app.MapGet("/api/cliente/{idCliente}", ([FromServices] bdbuygeContext _db, [From
     return Results.Ok(cliente);
 }).RequireAuthorization();
 
-app.MapPost("/api/cliente/novo", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/cliente", ([FromServices] bdbuygeContext _db,
     [FromBody] TbCliente novoCliente
 ) =>
 {
@@ -276,7 +276,7 @@ app.MapGet("/api/enderecos/cliente/{idCliente}", ([FromServices] bdbuygeContext 
     return Results.Ok(enderecos);
 }).RequireAuthorization();
 
-app.MapPost("/api/enderecos/novo", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
     [FromBody] TbEndereco novoEndereco
 ) =>
 {
@@ -448,7 +448,7 @@ app.MapGet("/api/mercantes/vendedor/{idCliente}", ([FromServices] bdbuygeContext
     return Results.Ok(mercantes);
 }).RequireAuthorization();
 
-app.MapPost("/api/mercantes/novo", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
 ) =>
 {
@@ -667,7 +667,7 @@ app.MapGet("/api/produtos/mercante/{idMercante}", ([FromServices] bdbuygeContext
     return Results.Ok(produtos);
 }).AllowAnonymous();
 
-app.MapPost("/api/produto/novo", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/produto", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProduto novoProduto
 ) =>
 {
