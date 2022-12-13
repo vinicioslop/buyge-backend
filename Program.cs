@@ -740,6 +740,19 @@ app.MapDelete("/api/produto/remover/{idProduto}", ([FromServices] bdbuygeContext
         return Results.NotFound();
     }
 
+    var query = _db.TbProdutoImagem.AsQueryable<TbProdutoImagem>();
+    var imagensProduto = query.ToList<TbProdutoImagem>().Where(ip => ip.FkCdProduto == idProduto);
+
+    var listaImagensProduto = imagensProduto.ToList<TbProdutoImagem>();
+
+    if (listaImagensProduto.Count() > 0)
+    {
+        listaImagensProduto.ForEach((imagem) =>
+        {
+            _db.TbProdutoImagem.Remove(imagem);
+        });
+    }
+
     _db.TbProduto.Remove(produto);
     _db.SaveChanges();
 
