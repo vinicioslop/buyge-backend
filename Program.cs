@@ -116,7 +116,7 @@ app.MapGet("/api/cliente/{idCliente}", ([FromServices] bdbuygeContext _db, [From
     return Results.Ok(cliente);
 }).RequireAuthorization();
 
-app.MapPost("/api/cliente", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/cliente/cadastrar", ([FromServices] bdbuygeContext _db,
     [FromBody] TbCliente novoCliente
 ) =>
 {
@@ -277,7 +277,7 @@ app.MapGet("/api/enderecos/cliente/{idCliente}", ([FromServices] bdbuygeContext 
     return Results.Ok(enderecos);
 }).RequireAuthorization();
 
-app.MapPost("/api/enderecos", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/enderecos/adicionar", ([FromServices] bdbuygeContext _db,
     [FromBody] TbEndereco novoEndereco
 ) =>
 {
@@ -449,7 +449,7 @@ app.MapGet("/api/mercantes/vendedor/{idCliente}", ([FromServices] bdbuygeContext
     return Results.Ok(mercantes);
 }).RequireAuthorization();
 
-app.MapPost("/api/mercantes", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/mercantes/cadastrar", ([FromServices] bdbuygeContext _db,
     [FromBody] TbMercante novoMercante
 ) =>
 {
@@ -668,7 +668,7 @@ app.MapGet("/api/produtos/mercante/{idMercante}", ([FromServices] bdbuygeContext
     return Results.Ok(produtos);
 }).AllowAnonymous();
 
-app.MapPost("/api/produto", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/produto/adicionar", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProduto novoProduto
 ) =>
 {
@@ -780,7 +780,7 @@ app.MapGet("/api/produtos/produto-imagem/{idProduto}/todas", ([FromServices] bdb
     return Results.Ok(produtoImagens);
 }).AllowAnonymous();
 
-app.MapPost("/api/produtos/produto-imagem", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/produtos/produto-imagem/adicionar", ([FromServices] bdbuygeContext _db,
     [FromBody] TbProdutoImagem novaImagem
 ) =>
 {
@@ -872,7 +872,7 @@ app.MapGet("/api/favoritos/{idCliente}", ([FromServices] bdbuygeContext _db, [Fr
     return Results.Ok(items);
 }).RequireAuthorization();
 
-app.MapPost("/api/favorito/novo/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
+app.MapPost("/api/favorito/adicionar/{idCliente}/{idProduto}", ([FromServices] bdbuygeContext _db,
     [FromRoute] int idCliente, [FromRoute] int idProduto
 ) =>
 {
