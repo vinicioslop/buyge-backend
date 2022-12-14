@@ -120,10 +120,8 @@ app.MapPost("/api/cliente/cadastrar", ([FromServices] bdbuygeContext _db,
     [FromBody] TbCliente novoCliente
 ) =>
 {
-    if (String.IsNullOrEmpty(novoCliente.NmCliente))
-    {
-        return Results.BadRequest(new { mensagem = "Não é possivel incluir um cliente sem nome." });
-    }
+    if (String.IsNullOrEmpty(novoCliente.NmCliente)) return Results.BadRequest(new { mensagem = "Não é possivel incluir um cliente sem nome." });
+
 
     var cliente = new TbCliente
     {
