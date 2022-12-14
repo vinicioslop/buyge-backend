@@ -12,10 +12,10 @@ using MercadoPago.Config;
 using System.Text.Json.Serialization;
 
 // ACESS TOKEN TESTE
-//MercadoPagoConfig.AccessToken = "TEST-2863067349326898-112719-b6619df8821b7a6437236c816ff370f5-265323495";
+MercadoPagoConfig.AccessToken = "TEST-2863067349326898-112719-b6619df8821b7a6437236c816ff370f5-265323495";
 
 // ACESS TOKEN PRODUÇÃO
-MercadoPagoConfig.AccessToken = "APP_USR-2863067349326898-112719-4ccb4eabd31fd1564fc303658a0faf5e-265323495";
+//MercadoPagoConfig.AccessToken = "APP_USR-2863067349326898-112719-4ccb4eabd31fd1564fc303658a0faf5e-265323495";
 
 var builder = WebApplication.CreateBuilder(args);
 
