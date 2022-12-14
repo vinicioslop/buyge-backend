@@ -1173,9 +1173,9 @@ app.MapPost("/api/comprar/{idCliente}", async ([FromServices] bdbuygeContext _db
 
     var BackUrls = new PreferenceBackUrlsRequest
     {
-        Success = "http://127.0.0.1:5500/src/pages/compras/compra.html",
-        Failure = "http://127.0.0.1:5500/src/pages/compras/compra.html",
-        Pending = "http://127.0.0.1:5500/src/pages/compras/compra.html"
+        Success = "http://www.buyge.com.br/src/pages/compras/compra.html",
+        Failure = "http://www.buyge.com.br/src/pages/compras/compra.html",
+        Pending = "http://www.buyge.com.br/src/pages/compras/compra.html"
     };
 
     var request = new PreferenceRequest
